@@ -1,0 +1,31 @@
+name: brainstorm
+version: 1.0.0
+description: 头脑风暴工作流 - 帮助用户探索和定义需求
+
+variables:
+  topic:
+    type: string
+    required: true
+    description: 头脑风暴的主题
+    prompt: 请输入头脑风暴的主题
+
+commands:
+  init:
+    type: template
+    description: 初始化头脑风暴
+    template: templates/init.md
+    output: "brainstorms/{{topic}}/init.md"
+    
+  explore:
+    type: template
+    description: 探索问题和方向
+    template: templates/explore.md
+    output: "brainstorms/{{topic}}/explore.md"
+    dependsOn: [init]
+    
+  summarize:
+    type: template
+    description: 总结头脑风暴结果
+    template: templates/summarize.md
+    output: "brainstorms/{{topic}}/summarize.md"
+    dependsOn: [explore]
