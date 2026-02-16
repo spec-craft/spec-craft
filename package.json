@@ -1,7 +1,7 @@
 {
   "name": "@speccraft/cli",
   "version": "0.1.0",
-  "description": "Spec Creator - 帮团队创建和管理 spec-driven 工作流的工具",
+  "description": "A powerful CLI tool for creating and managing spec-driven development workflows",
   "type": "module",
   "main": "src/index.ts",
   "bin": {
@@ -15,7 +15,8 @@
     "typecheck": "tsc --noEmit",
     "build": "bun build ./src/index.ts --outdir ./dist",
     "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepublishOnly": "bun test && bun run typecheck"
   },
   "dependencies": {
     "chalk": "^5.3.0",
@@ -39,8 +40,24 @@
     "spec",
     "workflow",
     "cli",
-    "agent"
+    "agent",
+    "spec-driven",
+    "development",
+    "template",
+    "automation",
+    "bun"
   ],
-  "author": "",
-  "license": "MIT"
+  "author": "SpecCraft Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spec-craft/spec-craft.git"
+  },
+  "homepage": "https://github.com/spec-craft/spec-craft#readme",
+  "bugs": {
+    "url": "https://github.com/spec-craft/spec-craft/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -1,0 +1,28 @@
+# 测试文件
+tests/
+**/*.test.ts
+**/*.test.js
+coverage/
+
+# 开发配置
+.vscode/
+.claude/
+.git/
+.github/
+
+# 文档和示例
+docs/
+
+# 配置文件
+.gitignore
+.eslintrc*
+.prettierrc*
+tsconfig.json
+
+# 临时文件
+*.log
+.DS_Store
+node_modules/
+
+# Bun 特定
+bun.lock

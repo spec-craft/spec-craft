@@ -75,8 +75,8 @@ const contextManagementSchema = z
   .optional();
 
 const workflowSchema = z.object({
-  name: z.string({ required_error: '"name" is required' }),
-  version: z.string({ required_error: '"version" is required' }),
+  name: z.string({ message: '"name" is required' }),
+  version: z.string({ message: '"version" is required' }),
   description: z.string().optional(),
   variables: z.record(z.string(), variableSchema).optional(),
   contextManagement: contextManagementSchema,
@@ -87,8 +87,8 @@ const workflowSchema = z.object({
 });
 
 const marketplaceSchema = z.object({
-  name: z.string({ required_error: '"name" is required' }),
-  version: z.string({ required_error: '"version" is required' }),
+  name: z.string({ message: '"name" is required' }),
+  version: z.string({ message: '"version" is required' }),
   description: z.string().optional(),
   workflows: z.array(z.string()).optional(),
 });
