@@ -1,0 +1,75 @@
+name: feature-dev
+version: 1.0.0
+description: 标准功能开发流程（文档 + 代码混合）
+
+variables:
+  feature:
+    type: string
+    required: true
+    description: 功能名称
+    prompt: 请输入功能名称
+  priority:
+    type: select
+    options: [P0, P1, P2, P3]
+    default: P2
+    description: 优先级
+    prompt: 请选择优先级
+  outputDir:
+    type: string
+    default: "specs/{{feature}}"
+
+commands:
+  init:
+    type: template
+    description: 初始化功能开发
+    template: templates/init.md
+    output: "{{outputDir}}/init.md"
+
+  spec:
+    type: template
+    description: 生成需求规格
+    template: templates/spec.md
+    output: "{{outputDir}}/spec.md"
+    dependsOn: [init]
+
+  design:
+    type: template
+    description: 生成技术设计
+    template: templates/design.md
+    output: "{{outputDir}}/design.md"
+    dependsOn: [spec]
+
+  tasks:
+    type: template
+    description: 生成任务列表
+    template: templates/tasks.md
+    output: "{{outputDir}}/tasks.md"
+    dependsOn: [design]
+
+  implement:
+    type: execution
+    description: 实现代码
+    dependsOn: [tasks]
+
+  test:
+    type: execution
+    description: 运行测试
+    dependsOn: [implement]
+
+  validate:
+    type: query
+    description: 验证完整性
+    dependsOn: [test]
+    checks:
+      - spec-completeness
+      - test-coverage
+      - no-todo-comments
+
+  fix:
+    type: execution
+    description: 修复问题
+    dependsOn: [validate]
+
+  status:
+    type: query
+    description: 查看当前状态

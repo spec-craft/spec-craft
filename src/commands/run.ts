@@ -4,8 +4,9 @@ import * as path from "path";
 import inquirer from "inquirer";
 import { WorkflowLoader } from "../core/WorkflowLoader";
 import { StateManager } from "../core/StateManager";
-import { TemplateRenderer } from "../core/TemplateRenderer";
-import type { Workflow, WorkflowVariable } from "../core/types";
+import { DependencyResolver } from "../core/DependencyResolver";
+import { CommandExecutor } from "../core/CommandExecutor";
+import type { Workflow, WorkflowVariable, WorkflowCommand } from "../core/types";
 
 export const runCommand = new Command("run")
   .description("运行工作流命令")
@@ -14,7 +15,13 @@ export const runCommand = new Command("run")
   .option("-i, --instance <name>", "实例名称")
   .option("-f, --force", "强制重新执行", false)
   .option("-d, --work-dir <path>", "工作目录", ".")
-  .action(async (workflowPath: string, command: string | undefined, options: { instance?: string; force: boolean; workDir: string }) => {
+  .option("--no-auto-deps", "不自动执行依赖命令")
+  .action(async (workflowPath: string, command: string | undefined, options: { 
+    instance?: string; 
+    force: boolean; 
+    workDir: string;
+    autoDeps: boolean;
+  }) => {
     try {
       await executeRun(workflowPath, command, options);
     } catch (error) {
@@ -26,7 +33,7 @@ export const runCommand = new Command("run")
 async function executeRun(
   workflowPath: string,
   command: string | undefined,
-  options: { instance?: string; force: boolean; workDir: string }
+  options: { instance?: string; force: boolean; workDir: string; autoDeps: boolean }
 ): Promise<void> {
   const workDir = path.resolve(options.workDir);
   const absoluteWorkflowPath = path.resolve(workflowPath);
@@ -35,26 +42,33 @@ async function executeRun(
   const workflow = await loadWorkflow(absoluteWorkflowPath);
   console.log(`工作流: ${workflow.name} v${workflow.version}`);
   
-  // 2. 如果没有指定命令，显示可用命令
+  // 2. 验证工作流依赖
+  const validation = DependencyResolver.validate(workflow);
+  if (!validation.valid) {
+    throw new Error(`工作流验证失败:\n${validation.errors.join("\n")}`);
+  }
+  
+  // 3. 如果没有指定命令，显示可用命令
   if (!command) {
     showAvailableCommands(workflow);
     return;
   }
   
-  // 3. 验证命令存在
+  // 4. 验证命令存在
   const cmd = workflow.commands[command];
   if (!cmd) {
     throw new Error(`命令 "${command}" 不存在。可用命令: ${Object.keys(workflow.commands).join(", ")}`);
   }
   
-  // 4. 获取或创建实例名称
+  // 5. 获取或创建实例名称
   const instanceName = options.instance || await promptInstanceName();
   console.log(`实例: ${instanceName}`);
   
-  // 5. 初始化状态管理器
+  // 6. 初始化管理器
   const stateManager = new StateManager(workDir);
+  const executor = new CommandExecutor(workDir);
   
-  // 6. 获取或创建实例
+  // 7. 获取或创建实例
   let instance = await stateManager.getInstance(workflow.name, instanceName);
   if (!instance) {
     // 收集变量
@@ -65,62 +79,150 @@ async function executeRun(
     console.log(`变量: ${JSON.stringify(instance.variables)} (已保存)`);
   }
   
-  // 7. 检查命令是否已完成
-  const currentStatus = await stateManager.getCommandStatus(workflow.name, instanceName, command);
-  if (currentStatus?.status === "completed" && !options.force) {
-    console.log(`\n命令 "${command}" 已完成。`);
-    console.log(`输出: ${currentStatus.output}`);
-    console.log(`使用 --force 强制重新执行`);
+  // 8. 如果使用 --force，使该命令及下游命令失效
+  if (options.force) {
+    const dependents = DependencyResolver.getAffectedCommands(workflow, command);
+    if (dependents.length > 0) {
+      console.log(`\n⚠️  强制重新执行将影响以下命令: ${dependents.join(", ")}`);
+      await stateManager.invalidateCommand(workflow.name, instanceName, command, dependents);
+    } else {
+      await stateManager.resetCommandStatus(workflow.name, instanceName, command);
+    }
+  }
+  
+  // 9. 获取需要执行的命令链（包括依赖）
+  const commandChain = DependencyResolver.getDependencyChain(workflow, command);
+  const commandsToExecute = options.autoDeps 
+    ? await filterCommandsToExecute(stateManager, workflow.name, instanceName, commandChain)
+    : [command];
+  
+  if (commandsToExecute.length === 0) {
+    console.log(`\n✅ 命令 "${command}" 已是最新状态，无需重新执行`);
+    const status = await stateManager.getCommandStatus(workflow.name, instanceName, command);
+    if (status?.output) {
+      console.log(`输出: ${status.output}`);
+    }
     return;
   }
   
-  // 8. 检查依赖
-  if (cmd.dependsOn && cmd.dependsOn.length > 0) {
-    const { canExecute, reason } = await stateManager.canExecuteCommand(
-      workflow.name, instanceName, command, cmd.dependsOn
+  console.log(`\n将执行以下命令: ${commandsToExecute.join(" -> ")}`);
+  
+  // 10. 按顺序执行命令
+  for (const cmdName of commandsToExecute) {
+    await executeCommand(
+      workflow, 
+      cmdName, 
+      absoluteWorkflowPath, 
+      instance.variables, 
+      instanceName,
+      stateManager, 
+      executor,
+      workDir
     );
-    if (!canExecute) {
-      throw new Error(`无法执行命令 "${command}": ${reason}`);
+  }
+  
+  console.log(`\n✅ 所有命令执行完成`);
+}
+
+/**
+ * 过滤出需要执行的命令
+ */
+async function filterCommandsToExecute(
+  stateManager: StateManager,
+  workflowName: string,
+  instanceName: string,
+  commandChain: string[]
+): Promise<string[]> {
+  const result: string[] = [];
+  
+  for (const cmdName of commandChain) {
+    const status = await stateManager.getCommandStatus(workflowName, instanceName, cmdName);
+    
+    // 需要执行的情况：
+    // 1. 从未执行过
+    // 2. 状态为 pending 或 in_progress
+    // 3. 状态为 needs-update
+    // 4. 状态为 failed
+    if (!status || 
+        status.status === "pending" || 
+        status.status === "in_progress" ||
+        status.status === "needs-update" ||
+        status.status === "failed") {
+      result.push(cmdName);
     }
   }
   
-  // 9. 设置命令状态为 in_progress
-  await stateManager.setCommandStatus(workflow.name, instanceName, command, "in_progress");
-  console.log(`\n执行命令: ${command}`);
-  console.log(`描述: ${cmd.description || "无"}`);
+  return result;
+}
+
+/**
+ * 执行单个命令
+ */
+async function executeCommand(
+  workflow: Workflow,
+  commandName: string,
+  workflowPath: string,
+  variables: Record<string, string | boolean>,
+  instanceName: string,
+  stateManager: StateManager,
+  executor: CommandExecutor,
+  workDir: string
+): Promise<void> {
+  const cmd = workflow.commands[commandName];
+  
+  console.log(`\n▶ 执行命令: ${commandName}`);
+  console.log(`  描述: ${cmd.description || "无"}`);
+  
+  // 检查依赖
+  if (cmd.dependsOn && cmd.dependsOn.length > 0) {
+    const { canExecute, reason } = await stateManager.canExecuteCommand(
+      workflow.name, instanceName, commandName, cmd.dependsOn
+    );
+    if (!canExecute) {
+      throw new Error(`无法执行命令 "${commandName}": ${reason}`);
+    }
+  }
+  
+  // 设置状态为 in_progress
+  await stateManager.setCommandStatus(
+    workflow.name, 
+    instanceName, 
+    commandName, 
+    "in_progress"
+  );
   
   try {
-    // 10. 执行命令
-    if (cmd.type === "template" && cmd.template && cmd.output) {
-      const outputPath = await executeTemplateCommand(
-        absoluteWorkflowPath, 
-        { template: cmd.template, output: cmd.output }, 
-        instance.variables, 
-        workDir
+    // 执行命令
+    const result = await executor.execute(cmd, variables, workflowPath);
+    
+    if (result.success) {
+      // 更新状态为 completed
+      await stateManager.setCommandStatus(
+        workflow.name, 
+        instanceName, 
+        commandName, 
+        "completed",
+        { output: result.output }
       );
       
-      // 11. 更新状态为 completed
-      await stateManager.setCommandStatus(workflow.name, instanceName, command, "completed", {
-        output: outputPath
-      });
-      
-      console.log(`\n✅ 命令 "${command}" 执行完成`);
-      console.log(`输出: ${outputPath}`);
+      console.log(`  ✅ 完成${result.output ? ` -> ${result.output}` : ""}`);
     } else {
-      // 其他命令类型暂不支持
-      throw new Error(`命令类型 "${cmd.type}" 暂不支持`);
+      throw new Error(result.error || "执行失败");
     }
   } catch (error) {
     // 更新状态为 failed
-    await stateManager.setCommandStatus(workflow.name, instanceName, command, "failed", {
-      error: error instanceof Error ? error.message : String(error)
-    });
+    await stateManager.setCommandStatus(
+      workflow.name, 
+      instanceName, 
+      commandName, 
+      "failed",
+      { error: error instanceof Error ? error.message : String(error) }
+    );
     throw error;
   }
 }
 
 async function loadWorkflow(workflowPath: string): Promise<Workflow> {
-  // 检查是文件还是目录
   const stat = await fs.stat(workflowPath);
   
   if (stat.isDirectory()) {
@@ -133,15 +235,19 @@ async function loadWorkflow(workflowPath: string): Promise<Workflow> {
 function showAvailableCommands(workflow: Workflow): void {
   console.log(`\n可用命令:`);
   
-  const commandOrder = WorkflowLoader.getAllCommandsOrder(workflow);
+  const commandOrder = DependencyResolver.getExecutionOrder(workflow);
   
   for (const name of commandOrder) {
     const cmd = workflow.commands[name];
     const deps = cmd.dependsOn?.length ? ` (依赖: ${cmd.dependsOn.join(", ")})` : "";
-    console.log(`  ${name}${deps} - ${cmd.description || "无描述"}`);
+    const autoRun = cmd.autoRunDeps !== false ? " [自动执行依赖]" : "";
+    console.log(`  ${name}${deps} - ${cmd.description || "无描述"}${autoRun}`);
   }
   
   console.log(`\n使用方法: craft run <workflow> <command> -i <instance>`);
+  console.log(`选项:`);
+  console.log(`  --force         强制重新执行（包括下游命令）`);
+  console.log(`  --no-auto-deps  不自动执行依赖命令`);
 }
 
 async function promptInstanceName(): Promise<string> {
@@ -192,7 +298,6 @@ async function promptVariable(
     return value;
   }
   
-  // string 类型
   const { value } = await inquirer.prompt([{
     type: "input",
     name: "value",
@@ -200,34 +305,4 @@ async function promptVariable(
     default: config.default as string
   }]);
   return value;
-}
-
-async function executeTemplateCommand(
-  workflowPath: string,
-  cmd: { template: string; output: string },
-  variables: Record<string, string | boolean>,
-  workDir: string
-): Promise<string> {
-  // 解析模板路径（相对于工作流目录）
-  const templatePath = path.join(workflowPath, cmd.template);
-  
-  // 检查模板文件存在
-  if (!(await fs.pathExists(templatePath))) {
-    throw new Error(`模板文件不存在: ${templatePath}`);
-  }
-  
-  // 渲染模板
-  const content = await TemplateRenderer.renderFile(templatePath, variables);
-  
-  // 渲染输出路径
-  const relativeOutput = TemplateRenderer.renderPath(cmd.output, variables);
-  const absoluteOutput = path.join(workDir, relativeOutput);
-  
-  // 确保输出目录存在
-  await fs.ensureDir(path.dirname(absoluteOutput));
-  
-  // 写入文件
-  await fs.writeFile(absoluteOutput, content);
-  
-  return relativeOutput;
 }

@@ -3,6 +3,8 @@ import { program } from "commander";
 import { initCommand } from "../src/commands/init";
 import { copyCommand } from "../src/commands/copy";
 import { runCommand } from "../src/commands/run";
+import { listCommand } from "../src/commands/list";
+import { showCommand } from "../src/commands/show";
 
 program
   .name("craft")
@@ -12,5 +14,7 @@ program
 program.addCommand(initCommand);
 program.addCommand(copyCommand);
 program.addCommand(runCommand);
+program.addCommand(listCommand);
+program.addCommand(showCommand);
 
 program.parse();

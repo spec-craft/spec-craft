@@ -87,11 +87,11 @@ describe("craft run", () => {
       }
     });
     
-    // 尝试执行 summarize（跳过 explore）
-    const result = await $`bun ${process.cwd()}/bin/craft.ts run ${WORKFLOW_PATH} summarize -i test2 -d ${TEST_DIR}`.quiet().nothrow();
+    // 尝试执行 summarize（跳过 explore），禁用自动依赖执行
+    const result = await $`bun ${process.cwd()}/bin/craft.ts run ${WORKFLOW_PATH} summarize -i test2 -d ${TEST_DIR} --no-auto-deps`.quiet().nothrow();
     
     expect(result.exitCode).toBe(1);
-    expect(result.stderr.toString()).toContain("依赖命令");
+    expect(result.stderr.toString()).toContain("依赖");
   });
 
   test("命令已完成时跳过执行", async () => {
@@ -117,8 +117,8 @@ describe("craft run", () => {
     // 再次执行（不带 force）
     const result = await $`bun ${process.cwd()}/bin/craft.ts run ${WORKFLOW_PATH} init -i test3 -d ${TEST_DIR}`.quiet();
     
-    expect(result.stdout.toString()).toContain("已完成");
-    expect(result.stdout.toString()).toContain("--force");
+    expect(result.stdout.toString()).toContain("已是最新状态");
+    expect(result.stdout.toString()).toContain("无需重新执行");
   });
 
   test("使用 --force 强制重新执行", async () => {
@@ -144,6 +144,35 @@ describe("craft run", () => {
     // 使用 force 重新执行
     const result = await $`bun ${process.cwd()}/bin/craft.ts run ${WORKFLOW_PATH} init -i test4 -d ${TEST_DIR} --force`.quiet();
     
+    expect(result.stdout.toString()).toContain("强制重新执行");
     expect(result.stdout.toString()).toContain("执行完成");
+  });
+
+  test("自动执行依赖命令", async () => {
+    // 创建状态：只有 init 完成
+    const stateDir = path.join(TEST_DIR, ".craft");
+    await fs.ensureDir(stateDir);
+    await fs.writeJson(path.join(stateDir, "state.json"), {
+      version: "1.0.0",
+      instances: {
+        "brainstorm:test5": {
+          instance: "test5",
+          workflow: "brainstorm",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          variables: { topic: "test-topic" },
+          commands: {
+            init: { status: "completed", output: "test.md", completedAt: new Date().toISOString() }
+          }
+        }
+      }
+    });
+    
+    // 执行 summarize，应该先执行 explore
+    const result = await $`bun ${process.cwd()}/bin/craft.ts run ${WORKFLOW_PATH} summarize -i test5 -d ${TEST_DIR}`.quiet();
+    
+    // 应该显示需要执行 explore 和 summarize
+    expect(result.stdout.toString()).toContain("explore");
+    expect(result.stdout.toString()).toContain("summarize");
   });
 });
