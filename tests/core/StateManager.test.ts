@@ -177,4 +177,88 @@ describe("StateManager", () => {
       expect(content.instances["test-workflow:test-instance"]).toBeDefined();
     });
   });
+
+  describe("invalidateCommand", () => {
+    test("使命令及其下游命令失效", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+      await manager.setCommandStatus("test-workflow", "test-instance", "init", "completed");
+      await manager.setCommandStatus("test-workflow", "test-instance", "explore", "completed");
+      await manager.setCommandStatus("test-workflow", "test-instance", "summarize", "completed");
+      
+      const result = await manager.invalidateCommand(
+        "test-workflow", "test-instance", "init", ["explore", "summarize"]
+      );
+      
+      expect(result.invalidatedCommands).toContain("init");
+      expect(result.invalidatedCommands).toContain("explore");
+      expect(result.invalidatedCommands).toContain("summarize");
+      
+      const initStatus = await manager.getCommandStatus("test-workflow", "test-instance", "init");
+      expect(initStatus?.status).toBe("needs-update");
+      expect(initStatus?.invalidatedBy).toBe("init");
+    });
+
+    test("pending 状态的命令不受影响", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+      await manager.setCommandStatus("test-workflow", "test-instance", "init", "completed");
+      // explore 没有执行过
+      
+      const result = await manager.invalidateCommand(
+        "test-workflow", "test-instance", "init", ["explore"]
+      );
+      
+      expect(result.invalidatedCommands).toContain("init");
+      expect(result.unaffectedCommands).toContain("explore");
+    });
+  });
+
+  describe("getNeedsUpdateCommands", () => {
+    test("获取需要更新的命令", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+      await manager.setCommandStatus("test-workflow", "test-instance", "init", "needs-update");
+      await manager.setCommandStatus("test-workflow", "test-instance", "explore", "completed");
+      
+      const commands = await manager.getNeedsUpdateCommands("test-workflow", "test-instance");
+      
+      expect(commands).toContain("init");
+      expect(commands).not.toContain("explore");
+    });
+  });
+
+  describe("getInvalidationInfo", () => {
+    test("获取失效信息", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+      await manager.setCommandStatus("test-workflow", "test-instance", "init", "completed");
+      await manager.invalidateCommand("test-workflow", "test-instance", "init", ["explore"]);
+      
+      const info = await manager.getInvalidationInfo("test-workflow", "test-instance", "init");
+      
+      expect(info?.invalidatedBy).toBe("init");
+      expect(info?.invalidatedAt).toBeDefined();
+    });
+
+    test("未失效的命令返回空的失效信息", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+      await manager.setCommandStatus("test-workflow", "test-instance", "init", "completed");
+      
+      const info = await manager.getInvalidationInfo("test-workflow", "test-instance", "init");
+      
+      expect(info?.invalidatedBy).toBeUndefined();
+    });
+  });
+
+  describe("resetCommandStatus", () => {
+    test("重置命令状态", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+      await manager.setCommandStatus("test-workflow", "test-instance", "init", "completed", {
+        output: "output.md"
+      });
+      
+      await manager.resetCommandStatus("test-workflow", "test-instance", "init", "pending");
+      
+      const status = await manager.getCommandStatus("test-workflow", "test-instance", "init");
+      expect(status?.status).toBe("pending");
+      expect(status?.output).toBe("output.md"); // 保留输出
+    });
+  });
 });

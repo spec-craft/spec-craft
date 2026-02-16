@@ -10,6 +10,10 @@ export interface CommandState {
   startedAt?: string;
   output?: string;
   error?: string;
+  // 失效追踪
+  previousStatus?: CommandStatus;
+  invalidatedBy?: string;
+  invalidatedAt?: string;
 }
 
 export interface WorkflowInstanceState {
@@ -24,4 +28,10 @@ export interface WorkflowInstanceState {
 export interface StateFile {
   version: string;
   instances: Record<string, WorkflowInstanceState>;
+}
+
+// 失效结果
+export interface InvalidationResult {
+  invalidatedCommands: string[];
+  unaffectedCommands: string[];
 }

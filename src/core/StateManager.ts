@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import type { CommandStatus, CommandState, WorkflowInstanceState, StateFile } from "./state-types";
+import type { CommandStatus, CommandState, WorkflowInstanceState, StateFile, InvalidationResult } from "./state-types";
 
 const STATE_VERSION = "1.0.0";
 const STATE_DIR = ".craft";
@@ -207,5 +207,126 @@ export class StateManager {
     delete state.instances[key];
     await this.writeStateFile(state);
     return true;
+  }
+
+  /**
+   * 使指定命令及其下游命令失效
+   * 当某个命令需要重新执行时，所有依赖它的命令也需要更新
+   */
+  async invalidateCommand(
+    workflowName: string,
+    instanceName: string,
+    commandName: string,
+    dependents: string[]
+  ): Promise<InvalidationResult> {
+    const state = await this.readStateFile();
+    const key = this.getInstanceKey(workflowName, instanceName);
+    const now = new Date().toISOString();
+
+    const instance = state.instances[key];
+    if (!instance) {
+      throw new Error(`工作流实例不存在: ${workflowName}:${instanceName}`);
+    }
+
+    const invalidatedCommands: string[] = [];
+    const unaffectedCommands: string[] = [];
+
+    // 使当前命令失效
+    const currentCmd = instance.commands[commandName];
+    if (currentCmd && currentCmd.status === "completed") {
+      instance.commands[commandName] = {
+        ...currentCmd,
+        status: "needs-update",
+        previousStatus: currentCmd.status,
+        invalidatedBy: commandName,
+        invalidatedAt: now
+      };
+      invalidatedCommands.push(commandName);
+    }
+
+    // 使下游命令失效
+    for (const dep of dependents) {
+      const cmdState = instance.commands[dep];
+      if (cmdState && cmdState.status === "completed") {
+        instance.commands[dep] = {
+          ...cmdState,
+          status: "needs-update",
+          previousStatus: cmdState.status,
+          invalidatedBy: commandName,
+          invalidatedAt: now
+        };
+        invalidatedCommands.push(dep);
+      } else if (!cmdState || cmdState.status === "pending") {
+        unaffectedCommands.push(dep);
+      }
+    }
+
+    instance.updatedAt = now;
+    await this.writeStateFile(state);
+
+    return { invalidatedCommands, unaffectedCommands };
+  }
+
+  /**
+   * 获取需要更新的命令列表
+   */
+  async getNeedsUpdateCommands(
+    workflowName: string,
+    instanceName: string
+  ): Promise<string[]> {
+    const instance = await this.getInstance(workflowName, instanceName);
+    if (!instance) return [];
+
+    return Object.entries(instance.commands)
+      .filter(([_, state]) => state.status === "needs-update")
+      .map(([name, _]) => name);
+  }
+
+  /**
+   * 获取命令的失效信息
+   */
+  async getInvalidationInfo(
+    workflowName: string,
+    instanceName: string,
+    commandName: string
+  ): Promise<{ invalidatedBy?: string; invalidatedAt?: string } | null> {
+    const instance = await this.getInstance(workflowName, instanceName);
+    if (!instance) return null;
+
+    const cmdState = instance.commands[commandName];
+    if (!cmdState) return null;
+
+    return {
+      invalidatedBy: cmdState.invalidatedBy,
+      invalidatedAt: cmdState.invalidatedAt
+    };
+  }
+
+  /**
+   * 重置命令状态（清除失效标记）
+   */
+  async resetCommandStatus(
+    workflowName: string,
+    instanceName: string,
+    commandName: string,
+    status: CommandStatus = "pending"
+  ): Promise<void> {
+    const state = await this.readStateFile();
+    const key = this.getInstanceKey(workflowName, instanceName);
+
+    const instance = state.instances[key];
+    if (!instance) {
+      throw new Error(`工作流实例不存在: ${workflowName}:${instanceName}`);
+    }
+
+    const existingState = instance.commands[commandName];
+    instance.commands[commandName] = {
+      status,
+      // 保留输出
+      output: existingState?.output
+    };
+
+    instance.updatedAt = new Date().toISOString();
+    await this.writeStateFile(state);
   }
 }
