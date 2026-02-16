@@ -9,3 +9,4 @@ export * from "./StateManager";
 export * from "./TemplateRenderer";
 export * from "./DependencyResolver";
 export * from "./VariablePrompter";
+export * from "./CommandExecutor";
