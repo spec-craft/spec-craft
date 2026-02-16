@@ -2,6 +2,7 @@
 
 中文文档 | [English](./README.md)
 
+[![npm version](https://img.shields.io/npm/v/@speccraft/cli.svg)](https://www.npmjs.com/package/@speccraft/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-170%20passing-brightgreen.svg)](./tests)
 
@@ -30,17 +31,27 @@
 ### 前置要求
 - [Bun](https://bun.sh/) >= 1.0.0
 
-### 安装依赖
+如果还没安装 Bun，先安装它：
 ```bash
-bun install
+curl -fsSL https://bun.sh/install | bash
 ```
 
-### 全局安装（可选）
+### 安装 SpecCraft
+使用 Bun 全局安装：
 ```bash
-bun link
+bun add -g @speccraft/cli
 ```
 
-现在可以全局使用 `craft` 命令了。
+或使用 npm：
+```bash
+npm install -g @speccraft/cli
+```
+
+验证安装：
+```bash
+craft --version
+craft --help
+```
 
 ## 🚀 快速开始
 
@@ -443,16 +454,36 @@ bun run dev
 
 欢迎贡献！请随时提交 Pull Request。
 
-### 开发设置
+### 开发设置（贡献者）
 1. Fork 仓库
 2. 克隆你的 fork：`git clone https://github.com/your-username/spec-craft.git`
 3. 安装依赖：`bun install`
 4. 创建特性分支：`git checkout -b feature/amazing-feature`
 5. 进行修改
 6. 运行测试：`bun test`
-7. 提交修改：`git commit -m 'feat: add amazing feature'`
-8. 推送到分支：`git push origin feature/amazing-feature`
-9. 打开 Pull Request
+7. 类型检查：`bun run typecheck`
+8. 提交修改：`git commit -m 'feat: add amazing feature'`
+9. 推送到分支：`git push origin feature/amazing-feature`
+10. 打开 Pull Request
+
+### 本地开发
+```bash
+# 克隆仓库
+git clone https://github.com/spec-craft/spec-craft.git
+cd spec-craft
+
+# 安装依赖
+bun install
+
+# 开发模式运行（自动重载）
+bun run dev
+
+# 运行测试
+bun test
+
+# 类型检查
+bun run typecheck
+```
 
 ## 📄 许可证
 

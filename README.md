@@ -2,6 +2,7 @@
 
 [中文文档](./README_zh.md) | English
 
+[![npm version](https://img.shields.io/npm/v/@speccraft/cli.svg)](https://www.npmjs.com/package/@speccraft/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-170%20passing-brightgreen.svg)](./tests)
 
@@ -30,17 +31,27 @@
 ### Prerequisites
 - [Bun](https://bun.sh/) >= 1.0.0
 
-### Install Dependencies
+Install Bun if you haven't already:
 ```bash
-bun install
+curl -fsSL https://bun.sh/install | bash
 ```
 
-### Global Installation (Optional)
+### Install SpecCraft
+Install globally using Bun:
 ```bash
-bun link
+bun add -g @speccraft/cli
 ```
 
-Now you can use `craft` command globally.
+Or using npm:
+```bash
+npm install -g @speccraft/cli
+```
+
+Verify installation:
+```bash
+craft --version
+craft --help
+```
 
 ## 🚀 Quick Start
 
@@ -443,16 +454,36 @@ bun run dev
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-### Development Setup
+### Development Setup (For Contributors)
 1. Fork the repository
 2. Clone your fork: `git clone https://github.com/your-username/spec-craft.git`
 3. Install dependencies: `bun install`
 4. Create a feature branch: `git checkout -b feature/amazing-feature`
 5. Make your changes
 6. Run tests: `bun test`
-7. Commit your changes: `git commit -m 'feat: add amazing feature'`
-8. Push to the branch: `git push origin feature/amazing-feature`
-9. Open a Pull Request
+7. Type check: `bun run typecheck`
+8. Commit your changes: `git commit -m 'feat: add amazing feature'`
+9. Push to the branch: `git push origin feature/amazing-feature`
+10. Open a Pull Request
+
+### Local Development
+```bash
+# Clone the repository
+git clone https://github.com/spec-craft/spec-craft.git
+cd spec-craft
+
+# Install dependencies
+bun install
+
+# Run in development mode (auto-reload)
+bun run dev
+
+# Run tests
+bun test
+
+# Type checking
+bun run typecheck
+```
 
 ## 📄 License
 
