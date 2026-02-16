@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 
 // 内置模板列表
-const BUILTIN_TEMPLATES = ["brainstorm", "feature-dev"];
+const BUILTIN_TEMPLATES = ["brainstorm", "feature-dev", "api-design", "bug-fix", "quick-prototype"];
 
 // 获取内置模板路径
 function getBuiltinTemplatePath(templateName: string): string {
