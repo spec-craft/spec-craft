@@ -2,6 +2,8 @@
  * 工作流定义类型
  */
 
+import type { ChapterDefinition, ChapterGroup } from "../types/chapter";
+
 // 命令类型
 export type CommandType = "template" | "execution" | "query" | "interactive";
 
@@ -23,6 +25,22 @@ export interface QueryCheck {
 export interface ContextManagement {
   tokenThreshold?: number;
   roundThreshold?: number;
+}
+
+// 知识注入配置
+export interface KnowledgeInjection {
+  id: string;
+  source: string;  // 文件路径或 URL
+  skill?: string;  // 可选：引用其他 skill
+  removeFromOutput?: boolean;  // 生成后是否移除知识块
+}
+
+// SubAgent 定义
+export interface SubAgentDefinition {
+  id: string;
+  name?: string;
+  prompt: string;
+  dependsOn?: string[];  // 依赖其他 SubAgent
 }
 
 // 工作流变量定义
@@ -53,6 +71,16 @@ export interface WorkflowCommand {
   // 依赖关系
   dependsOn?: string[];
   autoRunDeps?: boolean;
+  
+  // Phase 3: 章节系统
+  chapters?: ChapterDefinition[];
+  chapterGroups?: ChapterGroup[];
+  
+  // Phase 3: 知识注入
+  injectKnowledge?: KnowledgeInjection[];
+  
+  // Phase 3: SubAgent 并行任务
+  subAgents?: SubAgentDefinition[];
 }
 
 // 工作流定义
