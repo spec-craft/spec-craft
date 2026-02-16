@@ -54,7 +54,7 @@ commands:
     type: template
 `;
       
-      expect(() => WorkflowLoader.parse(yaml)).toThrow("缺少必要字段: name");
+      expect(() => WorkflowLoader.parse(yaml)).toThrow("name");
     });
 
     test("缺少 version 字段应该报错", () => {
@@ -65,7 +65,7 @@ commands:
     type: template
 `;
       
-      expect(() => WorkflowLoader.parse(yaml)).toThrow("缺少必要字段: version");
+      expect(() => WorkflowLoader.parse(yaml)).toThrow("version");
     });
 
     test("无效的命令类型应该报错", () => {
@@ -77,7 +77,7 @@ commands:
     type: invalid-type
 `;
       
-      expect(() => WorkflowLoader.parse(yaml)).toThrow("type 无效");
+      expect(() => WorkflowLoader.parse(yaml)).toThrow("type");
     });
 
     test("依赖不存在的命令应该报错", () => {

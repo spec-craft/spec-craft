@@ -2,8 +2,10 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as yaml from "yaml";
 import type { Workflow, WorkflowCommand, WorkflowVariable } from "./types";
+import { SchemaValidator } from "./SchemaValidator";
 
 export class WorkflowLoader {
+  private static validator = new SchemaValidator();
   /**
    * 从文件路径加载工作流
    */
@@ -32,7 +34,15 @@ export class WorkflowLoader {
   static parse(content: string): Workflow {
     const raw = yaml.parse(content);
     
-    // 验证必要字段
+    // Schema 验证
+    const validation = this.validator.validateWorkflow(raw);
+    if (!validation.valid) {
+      throw new Error(
+        `工作流配置验证失败:\n${validation.errors.map(e => `  - ${e}`).join('\n')}`
+      );
+    }
+    
+    // 验证必要字段（后备检查）
     if (!raw.name) {
       throw new Error("工作流缺少必要字段: name");
     }

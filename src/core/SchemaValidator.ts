@@ -53,7 +53,7 @@ const queryCheckSchema = z.union([
 ]);
 
 const commandSchema = z.object({
-  description: z.string(),
+  description: z.string().optional(),
   type: z.enum(["template", "execution", "query", "interactive"]).optional(),
   template: z.string().optional(),
   output: z.string().optional(),
