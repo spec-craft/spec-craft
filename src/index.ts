@@ -27,6 +27,23 @@ export { ChapterManager } from "./core/ChapterManager";
 export { KnowledgeInjector } from "./core/KnowledgeInjector";
 export { SubAgentManager } from "./core/SubAgentManager";
 
+// Phase 4 modules
+export { SchemaValidator } from "./core/SchemaValidator";
+export type { ValidationResult } from "./core/SchemaValidator";
+
+// Errors
+export {
+  SpecCraftError,
+  WorkflowNotFoundError,
+  CommandNotFoundError,
+  ValidationError,
+  DependencyError,
+  StateError,
+} from "./errors";
+
+// Utils
+export { formatError, handleError } from "./utils/errorHandler";
+
 // Types
 export type * from "./core/types";
 export type * from "./core/state-types";
