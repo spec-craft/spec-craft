@@ -7,3 +7,4 @@ export * from "./state-types";
 export * from "./WorkflowLoader";
 export * from "./StateManager";
 export * from "./TemplateRenderer";
+export * from "./DependencyResolver";
