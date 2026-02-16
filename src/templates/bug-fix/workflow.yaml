@@ -1,0 +1,50 @@
+name: bug-fix
+version: 1.0.0
+description: Bug 修复流程
+
+variables:
+  bug-id:
+    type: string
+    required: true
+    description: Bug ID
+    prompt: 请输入 Bug ID
+  outputDir:
+    type: string
+    default: "specs/bugs/{{bug-id}}"
+
+commands:
+  init:
+    type: template
+    description: 记录 Bug 信息
+    template: templates/init.md
+    output: "{{outputDir}}/bug-report.md"
+
+  reproduce:
+    type: execution
+    description: 复现问题
+    dependsOn: [init]
+    execution:
+      mode: full
+
+  diagnose:
+    type: interactive
+    description: 诊断根因
+    dependsOn: [reproduce]
+
+  fix:
+    type: execution
+    description: 修复代码
+    dependsOn: [diagnose]
+    execution:
+      mode: incremental
+
+  verify:
+    type: execution
+    description: 验证修复
+    dependsOn: [fix]
+    execution:
+      command: npm test
+
+  status:
+    type: query
+    description: 查看当前状态
