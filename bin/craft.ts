@@ -2,6 +2,7 @@
 import { program } from "commander";
 import { initCommand } from "../src/commands/init";
 import { copyCommand } from "../src/commands/copy";
+import { createCommand } from "../src/commands/create";
 import { runCommand } from "../src/commands/run";
 import { listCommand } from "../src/commands/list";
 import { showCommand } from "../src/commands/show";
@@ -13,6 +14,7 @@ program
 
 program.addCommand(initCommand);
 program.addCommand(copyCommand);
+program.addCommand(createCommand);
 program.addCommand(runCommand);
 program.addCommand(listCommand);
 program.addCommand(showCommand);
