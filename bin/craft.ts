@@ -6,6 +6,7 @@ import { createCommand } from "../src/commands/create";
 import { runCommand } from "../src/commands/run";
 import { listCommand } from "../src/commands/list";
 import { showCommand } from "../src/commands/show";
+import { handleError } from "../src/utils/errorHandler";
 
 program
   .name("craft")
@@ -19,4 +20,5 @@ program.addCommand(runCommand);
 program.addCommand(listCommand);
 program.addCommand(showCommand);
 
-program.parse();
+// Global error handler
+program.parseAsync().catch(handleError);
