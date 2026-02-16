@@ -261,4 +261,37 @@ describe("StateManager", () => {
       expect(status?.output).toBe("output.md"); // 保留输出
     });
   });
+
+  describe("Chapter State Management - Phase 3", () => {
+    test("追踪章节状态", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+
+      await manager.updateChapterStatus("test-workflow", "test-instance", "design", "background", "completed");
+      await manager.updateChapterStatus("test-workflow", "test-instance", "design", "user-stories", "completed");
+
+      const instance = await manager.getInstance("test-workflow", "test-instance");
+      expect(instance?.commands.design.chapters?.background).toBe("completed");
+      expect(instance?.commands.design.chapters?.["user-stories"]).toBe("completed");
+    });
+
+    test("追踪当前章节组", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+
+      await manager.updateCurrentGroup("test-workflow", "test-instance", "design", "phase-2");
+
+      const instance = await manager.getInstance("test-workflow", "test-instance");
+      expect(instance?.commands.design.currentGroup).toBe("phase-2");
+    });
+
+    test("获取已完成的章节 ID", async () => {
+      await manager.upsertInstance("test-workflow", "test-instance");
+
+      await manager.updateChapterStatus("test-workflow", "test-instance", "design", "background", "completed");
+      await manager.updateChapterStatus("test-workflow", "test-instance", "design", "user-stories", "completed");
+      await manager.updateChapterStatus("test-workflow", "test-instance", "design", "requirements", "pending");
+
+      const completed = await manager.getCompletedChapters("test-workflow", "test-instance", "design");
+      expect(completed).toEqual(["background", "user-stories"]);
+    });
+  });
 });

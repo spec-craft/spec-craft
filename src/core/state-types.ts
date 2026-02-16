@@ -14,6 +14,9 @@ export interface CommandState {
   previousStatus?: CommandStatus;
   invalidatedBy?: string;
   invalidatedAt?: string;
+  // Phase 3: 章节状态追踪
+  chapters?: Record<string, string>; // chapter_id -> status
+  currentGroup?: string;
 }
 
 export interface WorkflowInstanceState {

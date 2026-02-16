@@ -329,4 +329,78 @@ export class StateManager {
     instance.updatedAt = new Date().toISOString();
     await this.writeStateFile(state);
   }
+
+  /**
+   * Phase 3: 更新章节状态
+   */
+  async updateChapterStatus(
+    workflowName: string,
+    instanceName: string,
+    commandName: string,
+    chapterId: string,
+    status: string
+  ): Promise<void> {
+    const state = await this.readStateFile();
+    const key = this.getInstanceKey(workflowName, instanceName);
+
+    const instance = state.instances[key];
+    if (!instance) {
+      throw new Error(`工作流实例不存在: ${workflowName}:${instanceName}`);
+    }
+
+    if (!instance.commands[commandName]) {
+      instance.commands[commandName] = { status: "in_progress" };
+    }
+    if (!instance.commands[commandName].chapters) {
+      instance.commands[commandName].chapters = {};
+    }
+
+    instance.commands[commandName].chapters![chapterId] = status;
+    instance.updatedAt = new Date().toISOString();
+    await this.writeStateFile(state);
+  }
+
+  /**
+   * Phase 3: 更新当前章节组
+   */
+  async updateCurrentGroup(
+    workflowName: string,
+    instanceName: string,
+    commandName: string,
+    groupName: string
+  ): Promise<void> {
+    const state = await this.readStateFile();
+    const key = this.getInstanceKey(workflowName, instanceName);
+
+    const instance = state.instances[key];
+    if (!instance) {
+      throw new Error(`工作流实例不存在: ${workflowName}:${instanceName}`);
+    }
+
+    if (!instance.commands[commandName]) {
+      instance.commands[commandName] = { status: "in_progress" };
+    }
+    instance.commands[commandName].currentGroup = groupName;
+    instance.updatedAt = new Date().toISOString();
+    await this.writeStateFile(state);
+  }
+
+  /**
+   * Phase 3: 获取已完成的章节 ID 列表
+   */
+  async getCompletedChapters(
+    workflowName: string,
+    instanceName: string,
+    commandName: string
+  ): Promise<string[]> {
+    const instance = await this.getInstance(workflowName, instanceName);
+    if (!instance) return [];
+
+    const chapters = instance.commands[commandName]?.chapters;
+    if (!chapters) return [];
+
+    return Object.entries(chapters)
+      .filter(([, status]) => status === "completed")
+      .map(([id]) => id);
+  }
 }
