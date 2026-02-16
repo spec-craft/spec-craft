@@ -1,0 +1,51 @@
+name: quick-prototype
+version: 1.0.0
+description: 快速原型迭代（代码优先）
+
+variables:
+  feature:
+    type: string
+    required: true
+    description: 原型名称
+    prompt: 请输入原型名称
+  outputDir:
+    type: string
+    default: "specs/prototypes/{{feature}}"
+
+commands:
+  init:
+    type: template
+    description: 记录原型目标
+    template: templates/init.md
+    output: "{{outputDir}}/prototype.md"
+
+  prototype:
+    type: execution
+    description: 快速实现原型
+    dependsOn: [init]
+    execution:
+      mode: full
+
+  test:
+    type: execution
+    description: 测试原型
+    dependsOn: [prototype]
+    execution:
+      command: npm test
+      failFast: true
+
+  reflect:
+    type: interactive
+    description: 反思测试结果
+    dependsOn: [test]
+
+  refine:
+    type: execution
+    description: 优化实现
+    dependsOn: [reflect]
+    execution:
+      mode: incremental
+
+  status:
+    type: query
+    description: 查看当前状态
