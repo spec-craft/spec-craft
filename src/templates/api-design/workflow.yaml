@@ -1,0 +1,37 @@
+name: api-design
+version: 1.0.0
+description: API 设计流程
+
+variables:
+  api:
+    type: string
+    required: true
+    description: API 名称
+    prompt: 请输入 API 名称
+  outputDir:
+    type: string
+    default: "specs/{{api}}"
+
+commands:
+  init:
+    type: template
+    description: 初始化 API 设计
+    template: templates/init.md
+    output: "{{outputDir}}/init.md"
+
+  define:
+    type: template
+    description: 定义 API 规格
+    template: templates/api-spec.md
+    output: "{{outputDir}}/api-spec.md"
+    dependsOn: [init]
+
+  review:
+    type: interactive
+    description: 审查 API 设计
+    dependsOn: [define]
+
+  done:
+    type: query
+    description: 完成 API 设计
+    dependsOn: [review]
