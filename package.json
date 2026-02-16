@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.ts",
   "bin": {
-    "craft": "./bin/craft.ts"
+    "craft": "bin/craft.ts"
   },
   "scripts": {
     "dev": "bun --watch bin/craft.ts",
