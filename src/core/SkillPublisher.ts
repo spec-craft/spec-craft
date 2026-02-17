@@ -3,7 +3,8 @@ import * as path from "path";
 import * as os from "os";
 import { WorkflowLoader } from "./WorkflowLoader";
 import { SkillGenerator } from "./SkillGenerator";
-import type { Workflow, AuthorInfo, PluginMetadata, ValidationResult } from "./types";
+import { MarketplaceManager } from "./MarketplaceManager";
+import type { Workflow, AuthorInfo, PluginMetadata, ValidationResult, PluginEntry } from "./types";
 
 export type PublishMode = 'local' | 'marketplace';
 
@@ -106,7 +107,7 @@ export class SkillPublisher {
   }
 
   /**
-   * Publish to marketplace (stub for now)
+   * Publish to marketplace
    */
   private static async publishMarketplace(
     workflow: Workflow,
@@ -115,6 +116,66 @@ export class SkillPublisher {
     author: AuthorInfo,
     force: boolean
   ): Promise<PublishResult> {
-    throw new Error("Marketplace publishing not yet implemented");
+    const workflowsDir = path.join(marketplacePath, 'workflows');
+    const targetDir = path.join(workflowsDir, workflow.name);
+
+    // Check if exists
+    if (await fs.pathExists(targetDir) && !force) {
+      throw new Error(
+        `Workflow already exists in marketplace: ${targetDir}. Use --force to overwrite.`
+      );
+    }
+
+    // Create directory
+    await fs.ensureDir(targetDir);
+
+    // Copy workflow files
+    const sourceFiles = ['workflow.yaml', 'SKILL.md'];
+    for (const file of sourceFiles) {
+      const sourcePath = path.join(workflowPath, file);
+      if (await fs.pathExists(sourcePath)) {
+        await fs.copy(sourcePath, path.join(targetDir, file));
+      }
+    }
+
+    // Update marketplace index
+    const indexPath = path.join(marketplacePath, '.claude-plugin', 'marketplace.json');
+    if (await fs.pathExists(indexPath)) {
+      const index = await fs.readJSON(indexPath) as { plugins: PluginEntry[] };
+
+      // Check if workflow already exists
+      const existingIndex = index.plugins.findIndex(p => p.name === workflow.name);
+      const pluginEntry: PluginEntry = {
+        name: workflow.name,
+        description: workflow.description || '',
+        version: '1.0.0',
+        author,
+        source: `./workflows/${workflow.name}`,
+        keywords: [],
+        category: 'workflow'
+      };
+
+      if (existingIndex >= 0) {
+        if (!force) {
+          throw new Error(`Workflow "${workflow.name}" already in marketplace. Use --force to overwrite.`);
+        }
+        index.plugins[existingIndex] = pluginEntry;
+      } else {
+        index.plugins.push(pluginEntry);
+      }
+
+      await fs.writeJSON(indexPath, index, { spaces: 2 });
+    }
+
+    return {
+      success: true,
+      mode: 'marketplace',
+      installedPath: targetDir,
+      message: `Workflow published to marketplace: ${targetDir}`,
+      actions: [
+        'Share the marketplace directory with your team',
+        'Team members can install workflows from the marketplace'
+      ]
+    };
   }
 }

@@ -57,15 +57,15 @@ describe("feature-dev 模板", () => {
     await expect(fs.pathExists(path.join(templatesDir, "tasks.md"))).resolves.toBe(true);
   });
 
-  it("SKILL.md 存在且格式正确", async () => {
+  it("SKILL.md exists and has correct format", async () => {
     // SKILL.md is now in src/skills/ instead of src/templates/
     const skillPath = path.join(process.cwd(), "src/skills/feature-dev/SKILL.md");
     await expect(fs.pathExists(skillPath)).resolves.toBe(true);
 
     const content = await fs.readFile(skillPath, "utf-8");
-    expect(content).toContain("# Feature-dev 工作流");
-    expect(content).toContain("## 何时使用");
-    expect(content).toContain("## 使用方式");
+    expect(content).toContain("# Feature Development Workflow");
+    expect(content).toContain("## When to Use");
+    expect(content).toContain("## Commands");
     expect(content).toContain("craft run feature-dev");
   });
 

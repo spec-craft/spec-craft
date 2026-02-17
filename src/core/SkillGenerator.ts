@@ -132,7 +132,46 @@ craft status ${workflow.name}
    * Validate SKILL.md format
    */
   static validate(content: string): ValidationResult {
-    throw new Error("Not implemented");
+    const errors: string[] = [];
+
+    // Check for front matter
+    if (!content.includes('---')) {
+      errors.push('Missing YAML front matter (---)');
+    } else {
+      // Check for name in front matter
+      if (!content.match(/^---\s*\nname:/m)) {
+        errors.push('Missing "name" in front matter');
+      }
+      // Check for description in front matter
+      if (!content.match(/^---\s*\ndescription:/m)) {
+        errors.push('Missing "description" in front matter');
+      }
+      // Check for "Use when" in description
+      if (!content.includes('Use when:')) {
+        errors.push('Description should include "Use when:" triggers');
+      }
+    }
+
+    // Check for title
+    if (!content.match(/^#\s+\w+/m)) {
+      errors.push('Missing title (# Title)');
+    }
+
+    // Check for commands section
+    if (!content.includes('## Commands')) {
+      errors.push('Missing "## Commands" section');
+    }
+
+    // Check for at least one command
+    const commandMatches = content.match(/###\s+\w+/g);
+    if (!commandMatches || commandMatches.length === 0) {
+      errors.push('No commands defined');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors
+    };
   }
 
   /**
@@ -142,6 +181,7 @@ craft status ${workflow.name}
     workflow: Workflow,
     templatePath: string
   ): Promise<string> {
-    throw new Error("Not implemented");
+    // For now, just use the regular generate method
+    return this.generate({ workflow, outputPath: templatePath });
   }
 }

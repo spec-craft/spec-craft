@@ -23,7 +23,23 @@ export class MarketplaceManager {
    * Initialize new marketplace
    */
   static async init(dirPath: string, config: MarketplaceConfig): Promise<void> {
-    throw new Error("Not implemented");
+    // Create marketplace directory structure
+    const claudePluginDir = path.join(dirPath, '.claude-plugin');
+    const workflowsDir = path.join(dirPath, 'workflows');
+
+    await fs.ensureDir(claudePluginDir);
+    await fs.ensureDir(workflowsDir);
+
+    // Create marketplace.json
+    const index: MarketplaceIndex = {
+      $schema: 'https://spec-craft.dev/schema/marketplace.json',
+      name: config.name,
+      description: `SpecCraft marketplace: ${config.name}`,
+      owner: config.owner,
+      plugins: []
+    };
+
+    await fs.writeJSON(path.join(claudePluginDir, 'marketplace.json'), index, { spaces: 2 });
   }
 
   /**
@@ -69,6 +85,17 @@ export class MarketplaceManager {
    * List all workflows in marketplace
    */
   static async list(dirPath: string): Promise<PluginEntry[]> {
-    throw new Error("Not implemented");
+    const indexPath = path.join(dirPath, '.claude-plugin', 'marketplace.json');
+
+    if (!await fs.pathExists(indexPath)) {
+      return [];
+    }
+
+    try {
+      const index = await fs.readJSON(indexPath) as MarketplaceIndex;
+      return index.plugins || [];
+    } catch {
+      return [];
+    }
   }
 }
