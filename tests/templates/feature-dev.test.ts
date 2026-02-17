@@ -58,7 +58,8 @@ describe("feature-dev 模板", () => {
   });
 
   it("SKILL.md 存在且格式正确", async () => {
-    const skillPath = path.join(TEMPLATE_DIR, "SKILL.md");
+    // SKILL.md is now in src/skills/ instead of src/templates/
+    const skillPath = path.join(process.cwd(), "src/skills/feature-dev/SKILL.md");
     await expect(fs.pathExists(skillPath)).resolves.toBe(true);
 
     const content = await fs.readFile(skillPath, "utf-8");

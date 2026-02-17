@@ -36,11 +36,12 @@ bun run format
 ### Directory Structure
 
 - `bin/craft.ts` - CLI entry point using Commander.js
-- `src/commands/` - CLI command implementations (init, copy, create, run, list, show)
+- `src/commands/` - CLI command implementations (init, copy, create, run, list, show, publish)
 - `src/core/` - Core business logic
 - `src/types/` - Type definitions
 - `src/utils/` - Utilities (error handling)
 - `src/templates/` - Built-in workflow templates (brainstorm, feature-dev, api-design, bug-fix, quick-prototype)
+- `src/skills/` - Built-in skills content (SKILL.md files)
 - `tests/` - Test files mirroring src structure
 
 ### Core Modules
@@ -77,6 +78,43 @@ Custom error hierarchy in `src/errors.ts`:
 
 All errors include helpful hints for users.
 
-## Testing
+## Skills System
 
-Tests use Bun's built-in test runner. Test files are co-located with implementation in `src/` (`.test.ts` suffix) plus integration tests in `tests/` directory.
+SpecCraft includes a comprehensive skills system that enables AI agents to create and use workflows through natural language.
+
+### Architecture
+
+- **Skills Location:** `src/skills/` - Built-in skills content
+- **Core Modules:**
+  - `SkillGenerator` - Generate SKILL.md from workflow definitions
+  - `SkillPublisher` - Publish skills locally or to marketplace
+  - `MarketplaceManager` - Manage marketplace operations
+  - `SkillInstaller` - Auto-install built-in skills
+
+### Built-in Skills
+
+6 built-in skills auto-install to `~/.claude/skills/` on first run:
+- `speccraft-manager` - Workflow management
+- `speccraft:brainstorm` - Brainstorming workflow
+- `speccraft:feature-dev` - Feature development workflow
+- `speccraft:api-design` - API design workflow
+- `speccraft:bug-fix` - Bug fixing workflow
+- `speccraft:quick-prototype` - Rapid prototyping workflow
+
+### Publishing Workflows
+
+```bash
+# Local mode
+craft publish my-workflow --mode local
+
+# Marketplace mode
+craft publish my-workflow --mode marketplace --marketplace ~/team-workflows
+```
+
+### Testing
+
+Skills system tests:
+- Unit tests: `tests/skills/*.test.ts`
+
+Run: `bun test tests/skills/`
+

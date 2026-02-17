@@ -291,6 +291,55 @@ This feature will...
 - Requirement 2
 ```
 
+## Skills for AI Agents
+
+SpecCraft includes skills that enable AI agents (like Claude Code) to effectively use workflows through natural language.
+
+### Built-in Skills
+
+When you run `craft` for the first time, it automatically installs 6 built-in skills to `~/.claude/skills/`:
+
+- **speccraft-manager** - Create, update, and publish workflows
+- **speccraft:brainstorm** - Structured brainstorming workflow
+- **speccraft:feature-dev** - Complete feature development lifecycle
+- **speccraft:api-design** - API specification workflow
+- **speccraft:bug-fix** - Systematic bug fixing workflow
+- **speccraft:quick-prototype** - Rapid prototyping workflow
+
+### Publishing Your Workflows
+
+Share your custom workflows as skills:
+
+```bash
+# Publish locally (for personal use)
+craft publish my-workflow --mode local
+
+# Publish to team marketplace
+craft publish my-workflow --mode marketplace --marketplace ~/team-workflows
+```
+
+**Local Mode:**
+- Installs to `~/.claude/skills/speccraft:my-workflow/`
+- Claude Code auto-discovers the skill
+- Quick setup for personal workflows
+
+**Marketplace Mode:**
+- Creates full plugin structure in a Git repository
+- Shareable with teams and community
+- Follows Claude Code plugin standards
+
+### Using Skills with Claude Code
+
+Once skills are installed, you can interact naturally:
+
+```
+You: "Help me create a code review workflow"
+Claude: [Uses speccraft-manager skill to guide you]
+
+You: "Start a new feature development for user authentication"
+Claude: [Uses speccraft:feature-dev skill to walk you through the process]
+```
+
 ## 📖 Built-in Templates
 
 ### 1. brainstorm

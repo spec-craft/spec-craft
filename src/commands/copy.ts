@@ -10,6 +10,11 @@ function getBuiltinTemplatePath(templateName: string): string {
   return path.join(__dirname, "..", "templates", templateName);
 }
 
+// 获取内置 Skill 路径
+function getBuiltinSkillPath(templateName: string): string {
+  return path.join(__dirname, "..", "skills", templateName, "SKILL.md");
+}
+
 export const copyCommand = new Command("copy")
   .description("从内置模板复制工作流")
   .argument("<template>", `模板名称 (可选: ${BUILTIN_TEMPLATES.join(", ")})`)
@@ -39,7 +44,13 @@ export const copyCommand = new Command("copy")
     
     // 复制模板目录
     await fs.copy(templatePath, targetPath);
-    
+
+    // 复制 SKILL.md (如果存在)
+    const skillPath = getBuiltinSkillPath(template);
+    if (await fs.pathExists(skillPath)) {
+      await fs.copy(skillPath, path.join(targetPath, "SKILL.md"));
+    }
+
     console.log(`\n✅ 工作流 "${workflowName}" 复制成功！`);
     console.log(`\n下一步：`);
     console.log(`  cd ${targetPath}`);

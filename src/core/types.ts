@@ -117,3 +117,56 @@ export function isQueryCommand(cmd: WorkflowCommand): cmd is WorkflowCommand & {
 export function isInteractiveCommand(cmd: WorkflowCommand): cmd is WorkflowCommand {
   return cmd.type === "interactive";
 }
+
+// ============================================
+// Skills System Types
+// ============================================
+
+export interface PluginMetadata {
+  name: string;
+  description: string;
+  version: string;
+  author: AuthorInfo;
+  homepage?: string;
+  repository?: string;
+  license: string;
+  keywords: string[];
+  speccraft?: {
+    workflowVersion: string;
+    compatibleWith: string;
+  };
+}
+
+export interface AuthorInfo {
+  name: string;
+  email: string;
+}
+
+export interface InstallationRecord {
+  workflow: string;
+  installedPath: string;
+  installedAt: string;
+  mode: 'local' | 'marketplace';
+  version: string;
+}
+
+export interface SkillSection {
+  title: string;
+  content: string;
+  order?: number;
+}
+
+export interface PluginEntry {
+  name: string;
+  description: string;
+  version: string;
+  author: AuthorInfo;
+  source: string;
+  category: string;
+  keywords: string[];
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+}
