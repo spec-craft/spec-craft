@@ -5,17 +5,47 @@ export interface SkillGenerationOptions {
   outputPath: string;
   templateType?: 'minimal' | 'standard' | 'detailed';
   customSections?: SkillSection[];
+  /** Custom trigger phrases for when to use this skill */
+  triggers?: string[];
 }
 
 export class SkillGenerator {
   /**
-   * Generate front matter section
+   * Generate front matter section with proper triggers
    */
-  private static generateFrontMatter(workflow: Workflow): string {
+  private static generateFrontMatter(workflow: Workflow, triggers?: string[]): string {
+    // Build "Use when" description
+    let description = workflow.description || 'Custom workflow';
+
+    if (triggers && triggers.length > 0) {
+      const triggerList = triggers.map((t, i) => `(${i + 1}) ${t}`).join(', ');
+      description += `. Use when: ${triggerList}`;
+    } else {
+      // Default triggers based on workflow type
+      description += `. Use when: (1) User wants to run ${workflow.name} workflow, (2) User needs to complete tasks defined in this workflow`;
+    }
+
     return `---
 name: speccraft:${workflow.name}
-description: ${workflow.description}
+description: ${description}
 ---`;
+  }
+
+  /**
+   * Generate example triggers section
+   */
+  private static generateExampleTriggers(workflow: Workflow): string {
+    const triggers = [
+      `You: Run the ${workflow.name} workflow`,
+      `You: Help me with ${workflow.name}`,
+      `You: Start ${workflow.name}`
+    ];
+
+    return `## Example Triggers
+
+\`\`\`
+${triggers.join('\n')}
+\`\`\``;
   }
 
   /**
@@ -83,15 +113,16 @@ craft status ${workflow.name}
    * Generate SKILL.md from workflow definition
    */
   static async generate(options: SkillGenerationOptions): Promise<string> {
-    const { workflow } = options;
+    const { workflow, triggers } = options;
 
     const sections = [
-      this.generateFrontMatter(workflow),
+      this.generateFrontMatter(workflow, triggers),
       `\n# ${workflow.name}\n`,
       `\n${workflow.description || ''}\n`,
       `\n${this.generateCommands(workflow)}\n`,
       this.generateVariables(workflow) ? `\n${this.generateVariables(workflow)}\n` : '',
-      this.generateUsage(workflow)
+      this.generateUsage(workflow),
+      `\n\n${this.generateExampleTriggers(workflow)}`
     ];
 
     return sections.filter(s => s.trim()).join('\n');
