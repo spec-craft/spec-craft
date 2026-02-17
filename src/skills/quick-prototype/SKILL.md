@@ -1,66 +1,65 @@
-# Quick-Prototype 工作流
+---
+name: speccraft:quick-prototype
+description: Rapid prototyping workflow for quick validation. Use when: (1) User wants to quickly validate an idea, (2) User says "prototype", "build a quick demo", "try this out", or similar, (3) Exploratory development where final solution is uncertain, (4) User prefers code-first over documentation-first.
+---
 
-快速原型迭代：先写代码，再测试，再反思，再优化。
+# Quick Prototype Workflow
 
-## 何时使用
+Rapid prototyping with iterate → test → reflect → refine cycle.
 
-- 需要快速验证一个想法
-- 探索性开发，不确定最终方案
-- 想先写代码再补文档
+## When to Use
 
-## 使用方式
+- Quick idea validation
+- Exploratory development
+- Code-first approach preferred
 
-使用 `craft run quick-prototype <command>` 执行命令：
+## Commands
 
-### 初始化
+### init
+
+Initialize prototype.
 
 ```bash
 craft run quick-prototype init --instance <feature-name>
 ```
 
-记录原型目标和约束。
+### prototype
 
-### 实现原型
+Build prototype.
 
 ```bash
 craft run quick-prototype prototype --instance <feature-name>
 ```
 
-快速实现原型代码。
+### test
 
-### 测试
+Test prototype.
 
 ```bash
 craft run quick-prototype test --instance <feature-name>
 ```
 
-运行测试。
+### reflect
 
-### 反思
+Reflect on results.
 
 ```bash
 craft run quick-prototype reflect --instance <feature-name>
 ```
 
-基于测试结果，讨论改进方向。
+### refine
 
-### 优化
+Refine based on reflection.
 
 ```bash
 craft run quick-prototype refine --instance <feature-name>
 ```
 
-基于反思结果优化代码。
+## Example Triggers
 
-## 流程
-
-1. `init` → 明确目标
-2. `prototype` → 快速实现
-3. `test` → 验证
-4. `reflect` → 反思
-5. `refine` → 优化
-6. 重复 3-5 直到满意
-
-## 产出
-
-- `specs/prototypes/<feature>/prototype.md` — 原型记录
+```
+"You: Help me prototype this idea"
+"Let's quickly build something to test"
+"I want to try this approach"
+"Build me a quick demo"
+```

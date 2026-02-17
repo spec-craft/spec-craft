@@ -1,50 +1,56 @@
-# API Design 工作流
+---
+name: speccraft:api-design
+description: API design workflow for creating REST/GraphQL APIs. Use when: (1) User needs to design a new API, (2) User says "design an API", "create an endpoint", "API specification", or similar, (3) User wants to document API requirements, (4) User needs API review workflow.
+---
 
-系统性的 API 设计流程，从需求到规格到评审。
+# API Design Workflow
 
-## 何时使用
+Systematic API design from requirements to specification to review.
 
-- 设计新的 REST/GraphQL API
-- 重构或扩展现有 API
-- 需要团队评审的 API 变更
+## When to Use
 
-## 使用方式
+- Designing new REST/GraphQL APIs
+- Refactoring or extending existing APIs
+- API changes requiring team review
 
-使用 `craft run api-design <command>` 执行命令：
+## Commands
 
-### 初始化
+### init
+
+Initialize API design.
 
 ```bash
 craft run api-design init --instance <api-name>
 ```
 
-创建 API 设计文档目录。
+### define
 
-### 定义 API 规格
+Define API specification.
 
 ```bash
 craft run api-design define --instance <api-name>
 ```
 
-生成详细的 API 规格文档（endpoints, request/response, errors）。
+### review
 
-### 审查
+Review API design.
 
 ```bash
 craft run api-design review --instance <api-name>
 ```
 
-交互式审查 API 设计，检查一致性和最佳实践。
+### done
 
-### 完成
+Finalize API design.
 
 ```bash
 craft run api-design done --instance <api-name>
 ```
 
-确认 API 设计完成。
+## Example Triggers
 
-## 产出
-
-- `specs/<api>/init.md` — API 概述
-- `specs/<api>/api-spec.md` — 完整 API 规格
+```
+"You: Help me design an API"
+"You: I need to create a new endpoint"
+"You: Write an API specification for..."
+```

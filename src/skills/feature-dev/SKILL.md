@@ -1,124 +1,88 @@
-# Feature-dev 工作流
+---
+name: speccraft:feature-dev
+description: Complete feature development lifecycle from requirements to implementation. Use when: (1) User wants to develop a new feature, (2) User needs complete spec → design → implement → test flow, (3) User says "develop a feature", "implement new functionality", "build a feature", or similar, (4) Team collaboration requires clear task decomposition.
+---
 
-标准功能开发流程，涵盖从需求规格到代码实现的完整链路。
+# Feature Development Workflow
 
-## 何时使用
+Complete feature development lifecycle.
 
-- 开发一个新功能
-- 需要完整的文档 → 设计 → 实现流程
-- 团队协作开发，需要清晰的任务分解
+## When to Use
 
-## 使用方式
+- Developing a new feature
+- Need complete spec → design → implement → test flow
+- Team collaboration requires clear task decomposition
 
-使用 `craft run feature-dev <command>` 执行命令：
+## Commands
 
-### 初始化
+### init
+
+Initialize feature specification.
 
 ```bash
 craft run feature-dev init -i <feature-name>
 ```
 
-创建功能开发的初始文档，设置基本信息。
+### spec
 
-### 需求规格
+Write detailed specification.
 
 ```bash
 craft run feature-dev spec -i <feature-name>
 ```
 
-生成详细的需求规格文档，包括：
-- 功能描述
-- 用户故事
-- 验收标准
-- 边界条件
+### design
 
-### 技术设计
+Technical design.
 
 ```bash
 craft run feature-dev design -i <feature-name>
 ```
 
-基于需求规格生成技术设计文档，包括：
-- 架构设计
-- 接口设计
-- 数据模型
-- 技术选型
+### tasks
 
-### 任务分解
+Generate task list.
 
 ```bash
 craft run feature-dev tasks -i <feature-name>
 ```
 
-根据技术设计生成可执行的任务列表。
+### implement
 
-### 实现代码
+Implement code.
 
 ```bash
 craft run feature-dev implement -i <feature-name>
 ```
 
-根据任务列表实现代码。
+### test
 
-### 运行测试
+Run tests.
 
 ```bash
 craft run feature-dev test -i <feature-name>
 ```
 
-运行测试并生成测试报告。
+### validate
 
-### 验证完整性
+Validate completeness.
 
 ```bash
 craft run feature-dev validate -i <feature-name>
 ```
 
-验证功能是否完整，检查：
-- 规格完整性
-- 测试覆盖率
-- 代码质量
+### fix
 
-### 修复问题
+Fix issues.
 
 ```bash
 craft run feature-dev fix -i <feature-name>
 ```
 
-根据验证结果修复发现的问题。
+## Example Triggers
 
-### 查看状态
-
-```bash
-craft run feature-dev status -i <feature-name>
 ```
-
-查看当前功能开发的进度和状态。
-
-## 流程建议
-
-1. 先运行 `init` 初始化
-2. 运行 `spec` 编写需求规格
-3. 运行 `design` 完成技术设计
-4. 运行 `tasks` 生成任务列表
-5. 运行 `implement` 实现代码
-6. 运行 `test` 验证功能
-7. 运行 `validate` 检查完整性
-8. 如有问题，运行 `fix` 修复
-9. 随时用 `status` 查看进度
-
-## 产出
-
-- `specs/<feature>/init.md` — 初始化文档
-- `specs/<feature>/spec.md` — 需求规格
-- `specs/<feature>/design.md` — 技术设计
-- `specs/<feature>/tasks.md` — 任务列表
-- 代码实现
-- 测试报告
-
-## 特性
-
-- **文档代码无边界**：文档生成和代码实现在同一个工作流中
-- **依赖自动执行**：运行某个命令时，自动执行所有前置依赖
-- **状态追踪**：记录每个命令的执行状态
-- **增量开发**：支持在任意阶段暂停和恢复
+"You: Help me develop a new feature"
+"You: I need to implement user authentication"
+"You: Build a new API endpoint"
+```

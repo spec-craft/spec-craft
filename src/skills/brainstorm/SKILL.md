@@ -1,32 +1,52 @@
-# 头脑风暴工作流
+---
+name: speccraft:brainstorm
+description: Structured brainstorming workflow for exploring ideas and defining requirements. Use when: (1) User wants to explore ideas or solve a problem, (2) User needs to define requirements for a new feature, (3) User says "brainstorm", "think through", "explore options", or similar, (4) User needs to structure unstructured thoughts into actionable items.
+---
 
-帮助用户进行头脑风暴，探索和定义需求。
+# Brainstorm Workflow
 
-## 使用方法
+Structured brainstorming sessions to explore ideas and define requirements.
+
+## When to Use
+
+- Exploring new ideas or solving problems
+- Defining requirements for new features
+- Structuring unstructured thoughts
+
+## Commands
+
+### init
+
+Initialize the brainstorming session.
 
 ```bash
-# 初始化头脑风暴
 craft run brainstorm init --instance <topic>
+```
 
-# 探索问题和方向
+### explore
+
+Explore different directions and aspects.
+
+```bash
 craft run brainstorm explore --instance <topic>
+```
 
-# 总结头脑风暴结果
+### summarize
+
+Document key insights and recommendations.
+
+```bash
 craft run brainstorm summarize --instance <topic>
 ```
 
-## 变量
+## Output
 
-| 变量 | 类型 | 必填 | 描述 |
-|------|------|------|------|
-| `topic` | string | 是 | 头脑风暴的主题 |
+All outputs saved in `brainstorms/<topic>/`
 
-## 命令流程
+## Example Triggers
 
-1. **init** - 初始化头脑风暴，理解主题背景
-2. **explore** - 深入探索各个方向
-3. **summarize** - 总结结果，提出建议
-
-## 输出
-
-所有输出保存在 `brainstorms/<topic>/` 目录下。
+```
+"You: Help me brainstorm a new feature"
+"You: I need to think through this problem"
+"You: Let's explore some ideas for..."
+```
