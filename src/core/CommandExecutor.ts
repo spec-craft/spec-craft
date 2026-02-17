@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import type { WorkflowCommand, ExecutionConfig } from "./types";
+import type { WorkflowCommand } from "./types";
 
 /**
  * 命令执行结果
@@ -146,7 +146,7 @@ export class CommandExecutor {
    * 执行交互命令
    */
   private async executeInteractive(
-    cmd: WorkflowCommand
+    _cmd: WorkflowCommand
   ): Promise<{ success: boolean; output?: string; error?: string }> {
     // 交互命令由 Agent 处理，这里只返回提示
     return { 

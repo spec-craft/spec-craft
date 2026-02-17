@@ -1,7 +1,6 @@
 import { Command } from "commander";
 import * as path from "path";
 import { WorkflowLoader } from "../core/WorkflowLoader";
-import type { Workflow } from "../core/types";
 
 export interface WorkflowDetail {
   name: string;

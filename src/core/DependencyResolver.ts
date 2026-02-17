@@ -1,4 +1,4 @@
-import type { Workflow, WorkflowCommand } from "./types";
+import type { Workflow } from "./types";
 
 /**
  * 依赖解析器

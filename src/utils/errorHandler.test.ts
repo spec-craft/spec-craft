@@ -1,7 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { formatError } from "./errorHandler";
 import {
-  SpecCraftError,
   WorkflowNotFoundError,
   ValidationError,
 } from "../errors";

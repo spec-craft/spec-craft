@@ -6,7 +6,7 @@ import { WorkflowLoader } from "../core/WorkflowLoader";
 import { StateManager } from "../core/StateManager";
 import { DependencyResolver } from "../core/DependencyResolver";
 import { CommandExecutor } from "../core/CommandExecutor";
-import type { Workflow, WorkflowVariable, WorkflowCommand } from "../core/types";
+import type { Workflow, WorkflowVariable } from "../core/types";
 
 export const runCommand = new Command("run")
   .description("运行工作流命令")
@@ -166,7 +166,7 @@ async function executeCommand(
   instanceName: string,
   stateManager: StateManager,
   executor: CommandExecutor,
-  workDir: string
+  _workDir: string
 ): Promise<void> {
   const cmd = workflow.commands[commandName];
   

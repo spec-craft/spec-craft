@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as yaml from "yaml";
-import type { Workflow, WorkflowCommand, WorkflowVariable } from "./types";
+import type { Workflow } from "./types";
 import { SchemaValidator } from "./SchemaValidator";
 
 export class WorkflowLoader {

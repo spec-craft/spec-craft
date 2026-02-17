@@ -3,8 +3,7 @@ import * as path from "path";
 import * as os from "os";
 import { WorkflowLoader } from "./WorkflowLoader";
 import { SkillGenerator } from "./SkillGenerator";
-import { MarketplaceManager } from "./MarketplaceManager";
-import type { Workflow, AuthorInfo, PluginMetadata, ValidationResult, PluginEntry } from "./types";
+import type { Workflow, AuthorInfo, PluginEntry } from "./types";
 
 export type PublishMode = 'local' | 'marketplace';
 
