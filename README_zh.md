@@ -1,508 +1,223 @@
-# SpecCraft
+# SpecCraft - AI 驱动的开发工作流 Skills
 
 中文文档 | [English](./README.md)
 
 [![npm version](https://img.shields.io/npm/v/@speccraft/cli.svg)](https://www.npmjs.com/package/@speccraft/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-170%20passing-brightgreen.svg)](./tests)
 
-**SpecCraft** 是一个强大的 CLI 工具，用于创建和管理规范驱动的开发工作流。它通过可定制的工作流模板帮助团队规范工作流程，确保整个开发生命周期的一致性和质量。
+SpecCraft 帮助团队通过 **Skills**（技能）创建和管理开发工作流，让 AI 代理（如 Claude Code）能够自然地理解和使用这些工作流。
 
-## 🌟 特性
+## 什么是 SpecCraft Skills？
 
-### 核心能力
-- **📋 工作流模板**: 内置常见开发场景的模板（头脑风暴、功能开发、API 设计、Bug 修复、快速原型）
-- **🔄 状态管理**: 自动依赖解析的命令执行状态追踪
-- **✅ Schema 验证**: 基于 Zod 的强大 YAML 验证
-- **🎯 变量系统**: 支持类型检查和提示的动态变量替换
-- **📚 知识注入**: 将外部知识和文档注入到提示中
-- **🤖 子代理支持**: 支持依赖管理的并行任务执行
-- **📖 章节系统**: 支持章节分组的增量文档生成
-- **🎨 自定义错误处理**: 用户友好的错误消息和有用的提示
+Skills 是 **AI 友好型工作流定义**，让你能够：
 
-### 命令类型
-1. **模板命令**: 从模板生成文档，支持变量替换
-2. **执行命令**: 运行 shell 命令并追踪状态
-3. **查询命令**: 使用验证规则检查项目状态
-4. **交互命令**: 工作流中的用户交互点
+- 🎯 告诉 AI 代理你的工作流是什么，什么时候使用
+- 📋 定义结构化的步骤和清晰的依赖关系
+- 🔄 自动追踪进度
+- 🤖 让 AI 引导你完成复杂流程
 
-## 📦 安装
+## 🚀 快速开始（30 秒）
 
-### 前置要求
-- [Bun](https://bun.sh/) >= 1.0.0
+### 步骤 1: 安装
 
-如果还没安装 Bun，先安装它：
 ```bash
+# 如果还没安装 Bun
 curl -fsSL https://bun.sh/install | bash
-```
 
-### 安装 SpecCraft
-使用 Bun 全局安装：
-```bash
+# 安装 SpecCraft
 bun add -g @speccraft/cli
 ```
 
-或使用 npm：
-```bash
-npm install -g @speccraft/cli
+### 步骤 2: 使用内置 Skill
+
+首次运行 `craft` 时，它会自动将 skills 安装到你的 Claude Code。只需自然地和 Claude 对话：
+
+```
+你："帮我开发一个新功能"
+Claude：[使用 speccraft:feature-dev skill]
 ```
 
-验证安装：
-```bash
-craft --version
-craft --help
-```
+**内置可用 Skills：**
+- `speccraft:brainstorm` - 结构化头脑风暴
+- `speccraft:feature-dev` - 功能开发周期
+- `speccraft:api-design` - API 设计规范
+- `speccraft:bug-fix` - Bug 调查与修复
+- `speccraft:quick-prototype` - 快速原型
 
-## 🚀 快速开始
-
-### 1. 初始化 Marketplace
-创建一个 marketplace 目录来存储你的工作流：
-
-```bash
-craft init my-workflows
-cd my-workflows
-```
-
-这会创建：
-```
-my-workflows/
-├── marketplace.json    # Marketplace 配置
-└── workflows/         # 你的工作流定义
-```
-
-### 2. 复制内置模板
-从预置模板开始：
+### 步骤 3: 运行工作流
 
 ```bash
+# 复制一个工作流开始
 craft copy feature-dev my-feature
+
+# 运行第一步
+craft run my-feature init --instance my-app
 ```
 
-可用模板：
-- `brainstorm` - 结构化头脑风暴会议
-- `feature-dev` - 完整的功能开发生命周期
-- `api-design` - API 规范和设计
-- `bug-fix` - 系统化的 Bug 调查和修复
-- `quick-prototype` - 快速原型开发工作流
+## 📖 如何使用内置 Skills
 
-### 3. 列出可用工作流
+### 与 Claude Code 对话
+
+安装 SpecCraft 后，Claude Code 会自动发现你的 Skills。只需描述你想要做什么：
+
+```
+你："我需要设计一个用户认证的 API"
+Claude：使用 speccraft:api-design skill，提问问题，生成规范
+
+你："登录流程有个 bug"
+Claude：使用 speccraft:bug-fix skill，引导你诊断问题
+
+你："帮我头脑风暴一个新产品功能"
+Claude：使用 speccraft:brainstorm skill，构建头脑风暴会议
+```
+
+### 通过命令行运行
+
 ```bash
+# 列出可用工作流
 craft list
-```
 
-### 4. 查看工作流详情
-```bash
-craft show my-feature
-```
+# 查看工作流详情
+craft show feature-dev
 
-### 5. 运行工作流命令
-```bash
-# 运行特定命令
-craft run my-feature init
+# 运行工作流命令
+craft run my-feature spec --instance my-app
+craft run my-feature design --instance my-app
 
-# 命令会自动运行依赖项
-craft run my-feature spec
-
-# 强制重新运行已完成的命令
-craft run my-feature spec --force
-
-# 自动运行依赖项
-craft run my-feature design --auto-deps
-```
-
-### 6. 检查工作流状态
-```bash
+# 查看进度
 craft status my-feature
 ```
 
-## 📚 工作流结构
+## 🔨 创建自定义 Skills
 
-### 基础 workflow.yaml
-```yaml
-name: my-workflow
-version: 1.0.0
-description: 我的自定义工作流
+### 快速开始
 
-variables:
-  feature:
-    type: string
-    required: true
-    description: 功能名称
-    prompt: 请输入功能名称
-  
-  priority:
-    type: select
-    options: [P0, P1, P2, P3]
-    default: P2
-
-commands:
-  init:
-    type: template
-    description: 初始化功能
-    template: templates/init.md
-    output: "specs/{{feature}}/init.md"
-  
-  spec:
-    type: template
-    description: 编写规范
-    template: templates/spec.md
-    output: "specs/{{feature}}/spec.md"
-    dependsOn: [init]
-  
-  implement:
-    type: execution
-    description: 实现功能
-    dependsOn: [spec]
-    execution:
-      shell: "echo 正在实现 {{feature}}"
-  
-  validate:
-    type: query
-    description: 验证实现
-    dependsOn: [implement]
-    checks:
-      - test-coverage
-      - no-lint-errors
-```
-
-### 高级特性
-
-#### 1. 知识注入
-将外部知识注入到命令模板中：
-
-```yaml
-commands:
-  design:
-    type: template
-    description: 生成设计文档
-    template: templates/design.md
-    output: "docs/design.md"
-    injectKnowledge:
-      - id: api-guidelines
-        source: docs/api-guidelines.md
-        removeFromOutput: true
-      - id: architecture
-        source: docs/architecture.md
-```
-
-#### 2. 章节系统
-增量生成文档：
-
-```yaml
-commands:
-  write-docs:
-    type: template
-    description: 编写文档
-    template: templates/docs.md
-    output: "docs/{{feature}}/README.md"
-    chapters:
-      - id: intro
-        title: 简介
-      - id: usage
-        title: 使用指南
-      - id: api
-        title: API 参考
-    chapterGroups:
-      - name: basics
-        chapters: [intro, usage]
-      - name: advanced
-        chapters: [api]
-```
-
-#### 3. 子代理并行执行
-定义带依赖关系的并行任务：
-
-```yaml
-commands:
-  analyze:
-    type: template
-    description: 分析代码库
-    template: templates/analysis.md
-    output: "analysis/{{feature}}.md"
-    subAgents:
-      - id: security
-        name: 安全分析
-        prompt: "分析安全影响"
-      
-      - id: performance
-        name: 性能分析
-        prompt: "分析性能影响"
-      
-      - id: summary
-        name: 综合总结
-        prompt: "总结安全和性能分析的发现"
-        dependsOn: [security, performance]
-```
-
-#### 4. 上下文管理
-控制命令上下文何时过期：
-
-```yaml
-contextManagement:
-  resetAfter: 3        # 3 个命令后重置
-  roundThreshold: 5    # 总共 5 轮后重置
-
-commands:
-  generate:
-    type: template
-    description: 生成代码
-    template: templates/code.md
-    output: "src/{{feature}}.ts"
-    contextManagement:
-      resetAfter: 1    # 覆盖：此命令后重置
-```
-
-## 🛠️ 创建自定义工作流
-
-### 使用 create 命令
 ```bash
-craft create my-custom-workflow
+# 从模板创建新工作流
+craft copy feature-dev my-custom-workflow
+
+# 编辑工作流定义
+cd my-custom-workflow
+vim workflow.yaml
 ```
 
-按照交互式提示进行：
-1. 输入工作流名称和描述
-2. 定义变量
-3. 添加命令
-4. 配置依赖关系
+### 发布你的 Skill
 
-### 工作流目录结构
-```
-my-custom-workflow/
-├── workflow.yaml           # 主工作流定义
-├── SKILL.md               # Claude skill 提示（可选）
-└── templates/             # 模板文件
-    ├── init.md
-    ├── spec.md
-    └── design.md
+与你或你的团队分享你的 Skill：
+
+```bash
+# 本地发布（个人使用）
+craft publish my-custom-workflow --mode local
+
+# 发布到团队市场
+craft publish my-custom-workflow --mode marketplace --marketplace ~/team-workflows
 ```
 
-### 模板文件
-模板使用 `{{variable}}` 语法进行替换：
+你的 Skill 现在对 AI 代理可用了！
 
-```markdown
-# 功能：{{feature}}
+## 📚 内置 Skills 参考
 
-优先级：{{priority}}
+### speccraft:brainstorm
 
-## 概述
-此功能将...
+**使用场景：** 需要系统化地探索想法
 
-## 需求
-- 需求 1
-- 需求 2
-```
+**命令：**
+- `init` - 开始头脑风暴会议
+- `explore` - 探索不同方向
+- `summarize` - 记录关键洞察
 
-## 📖 内置模板
+### speccraft:feature-dev
 
-### 1. brainstorm（头脑风暴）
-结构化头脑风暴工作流：
-- `init` - 初始化头脑风暴会议
-- `explore` - 探索想法和方向
-- `summarize` - 总结结果
+**使用场景：** 从零开始构建新功能
 
-### 2. feature-dev（功能开发）
-完整的功能开发生命周期：
-- `init` - 初始化功能
-- `spec` - 编写规范
-- `design` - 创建技术设计
-- `tasks` - 分解任务
-- `implement` - 实现代码
-- `test` - 运行测试
-- `validate` - 验证完整性
-- `fix` - 修复问题
-- `status` - 检查状态
+**命令：**
+- `init` - 初始化功能规范
+- `spec` - 编写详细规范
+- `design` - 技术设计
+- `tasks` - 分解为任务
+- `implement` - 实现阶段
+- `test` - 测试
+- `validate` - 最终验证
 
-### 3. api-design（API 设计）
-API 规范工作流：
-- `init` - 初始化 API 设计
-- `define` - 定义端点和 Schema
+### speccraft:api-design
+
+**使用场景：** 设计 APIs
+
+**命令：**
+- `init` - 开始 API 设计
+- `define` - 定义端点
 - `review` - 审查设计
-- `done` - 完成规范
+- `done` - 完成
 
-### 4. bug-fix（Bug 修复）
-系统化的 Bug 修复：
-- `init` - 初始化 Bug 调查
-- `reproduce` - 复现 Bug
-- `diagnose` - 诊断根本原因
+### speccraft:bug-fix
+
+**使用场景：** 调查和修复 Bug
+
+**命令：**
+- `init` - 初始化 Bug 报告
+- `reproduce` - 复现问题
+- `diagnose` - 寻找根本原因
 - `fix` - 实现修复
-- `verify` - 验证修复有效
-- `status` - 检查进度
+- `verify` - 验证修复
 
-### 5. quick-prototype（快速原型）
-快速原型开发：
-- `init` - 初始化原型
-- `prototype` - 构建快速原型
-- `test` - 测试原型
-- `reflect` - 反思学习
-- `refine` - 优化方法
-- `status` - 检查状态
+### speccraft:quick-prototype
 
-## 🏗️ 架构
+**使用场景：** 快速原型
 
-### 核心组件
+**命令：**
+- `init` - 开始原型
+- `prototype` - 构建原型
+- `test` - 快速测试
+- `reflect` - 回顾学习
+- `refine` - 改进
 
-#### WorkflowLoader（工作流加载器）
-从 YAML 文件加载和验证工作流定义。
+## CLI 参考
 
-#### SchemaValidator（Schema 验证器）
-使用 Zod 验证工作流 Schema，确保类型安全。
+以下是高级用法的 CLI 命令：
 
-#### StateManager（状态管理器）
-追踪命令执行状态、依赖关系和章节进度。
-
-#### DependencyResolver（依赖解析器）
-解析命令依赖关系并检测循环依赖。
-
-#### CommandExecutor（命令执行器）
-使用正确的上下文和变量替换执行命令。
-
-#### VariablePrompter（变量提示器）
-处理变量验证和用户提示。
-
-#### TemplateRenderer（模板渲染器）
-使用变量替换渲染模板。
-
-#### KnowledgeInjector（知识注入器）
-将外部知识注入到命令提示中。
-
-#### ChapterManager（章节管理器）
-管理带章节分组的增量文档生成。
-
-#### SubAgentManager（子代理管理器）
-管理带依赖关系的并行子代理执行。
-
-### 错误处理
-
-自定义错误层级，提供有用的提示：
-
-```typescript
-// 工作流未找到
-throw new WorkflowNotFoundError('my-workflow', './workflows');
-// Error [WORKFLOW_NOT_FOUND]: Workflow "my-workflow" not found at ./workflows
-// Hint: Make sure the workflow directory exists and contains a workflow.yaml file.
-
-// 验证错误
-throw new ValidationError(['name is required', 'version is required']);
-// Error [VALIDATION_ERROR]: Validation failed with 2 errors:
-//   - name is required
-//   - version is required
-
-// 依赖错误
-throw new DependencyError('spec', 'init');
-// Error [DEPENDENCY_ERROR]: Cannot execute command "spec" because dependency "init" is not completed
-```
-
-## 🧪 开发
-
-### 运行测试
 ```bash
-# 运行所有测试
-bun test
+# 工作流管理
+craft init <name>           # 创建市场
+craft copy <template> [dest]  # 复制模板
+craft list                  # 列出工作流
+craft show <workflow>      # 显示详情
 
-# 运行覆盖率测试
-bun test --coverage
+# 运行工作流
+craft run <workflow> <command> [options]
+  --instance <name>        # 实例名称
+  --force                  # 强制重新运行
+  --auto-deps              # 自动运行依赖
 
-# Watch 模式
-bun test --watch
+# 状态
+craft status <workflow>    # 显示进度
+craft log <workflow>      # 显示日志
+
+# 发布
+craft publish <workflow> [options]
+  --mode <local|marketplace>
+  --marketplace <路径>
+  --force
 ```
 
-### 类型检查
-```bash
-bun run typecheck
+## 项目结构
+
+```
+my-workflow/
+├── workflow.yaml          # 工作流定义
+├── templates/            # 模板文件
+└── SKILL.md             # Skill 描述（自动生成）
 ```
 
-### 开发模式
-```bash
-# 修改后自动重载
-bun run dev
-```
+## 高级特性
 
-## 📊 项目状态
+- **变量** - 动态替换，支持类型（string, select, boolean）
+- **依赖** - 使用 `dependsOn` 自动排序
+- **知识注入** - 将文档注入到提示中
+- **章节系统** - 增量文档生成
+- **子代理支持** - 并行 AI 任务执行
 
-### 阶段完成情况
+详见[完整文档](./docs)。
 
-- ✅ **Phase 1**: 核心基础设施
-  - 工作流解析和验证
-  - 基础模板系统
-  - 命令执行
-  - CLI 命令（init, list, show, run, copy）
+## 贡献
 
-- ✅ **Phase 2**: 状态与依赖
-  - 状态持久化
-  - 依赖解析
-  - 命令失效
-  - 自动运行依赖
-
-- ✅ **Phase 3**: 高级特性
-  - 知识注入
-  - 章节系统
-  - 子代理支持
-  - 工作流创建（craft create）
-
-- ✅ **Phase 4**: 完善与模板
-  - Schema 验证（Zod）
-  - 错误处理
-  - 内置模板（共 5 个）
-  - 集成测试
-
-### 测试覆盖率
-- **170 个测试**全部通过
-- **408 个断言**
-- **22 个测试文件**
-- **100% 通过率**
-
-## 🤝 贡献
-
-欢迎贡献！请随时提交 Pull Request。
-
-### 开发设置（贡献者）
-1. Fork 仓库
-2. 克隆你的 fork：`git clone https://github.com/your-username/spec-craft.git`
-3. 安装依赖：`bun install`
-4. 创建特性分支：`git checkout -b feature/amazing-feature`
-5. 进行修改
-6. 运行测试：`bun test`
-7. 类型检查：`bun run typecheck`
-8. 提交修改：`git commit -m 'feat: add amazing feature'`
-9. 推送到分支：`git push origin feature/amazing-feature`
-10. 打开 Pull Request
-
-### 本地开发
-```bash
-# 克隆仓库
-git clone https://github.com/spec-craft/spec-craft.git
-cd spec-craft
-
-# 安装依赖
-bun install
-
-# 开发模式运行（自动重载）
-bun run dev
-
-# 运行测试
-bun test
-
-# 类型检查
-bun run typecheck
-```
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
-
-## 🙏 致谢
-
-构建工具：
-- [Bun](https://bun.sh/) - 快速的 JavaScript 运行时
-- [Commander.js](https://github.com/tj/commander.js) - CLI 框架
-- [Zod](https://github.com/colinhacks/zod) - Schema 验证
-- [Inquirer.js](https://github.com/SBoudrias/Inquirer.js) - 交互式提示
-- [Chalk](https://github.com/chalk/chalk) - 终端样式
-- [yaml](https://github.com/eemeli/yaml) - YAML 解析器
-
-## 📮 支持
-
-如有问题和支持需求，请在 [GitHub 仓库](https://github.com/spec-craft/spec-craft/issues)中提出 issue。
-
----
-
-用 ❤️ 为规范驱动开发而构建
+欢迎提交 Issue 和 PR！[GitHub](https://github.com/spec-craft/spec-craft)
