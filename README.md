@@ -1,557 +1,223 @@
-# SpecCraft
+# SpecCraft - AI-Powered Workflow Skills for Development
 
 [中文文档](./README_zh.md) | English
 
 [![npm version](https://img.shields.io/npm/v/@speccraft/cli.svg)](https://www.npmjs.com/package/@speccraft/cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-170%20passing-brightgreen.svg)](./tests)
 
-**SpecCraft** is a powerful CLI tool for creating and managing spec-driven development workflows. It helps teams structure their work through customizable workflow templates, ensuring consistency and quality throughout the development lifecycle.
+SpecCraft helps teams create and manage development workflows through **skills** that AI agents (like Claude Code) can understand and use naturally.
 
-## 🌟 Features
+## What are SpecCraft Skills?
 
-### Core Capabilities
-- **📋 Workflow Templates**: Pre-built templates for common development scenarios (brainstorming, feature development, API design, bug fixing, prototyping)
-- **🔄 State Management**: Track command execution status with automatic dependency resolution
-- **✅ Schema Validation**: Robust YAML validation powered by Zod
-- **🎯 Variable System**: Dynamic variable substitution with type checking and prompts
-- **📚 Knowledge Injection**: Inject external knowledge and documentation into prompts
-- **🤖 SubAgent Support**: Parallel task execution with dependency management
-- **📖 Chapter System**: Incremental document generation with chapter groups
-- **🎨 Custom Error Handling**: User-friendly error messages with helpful hints
+Skills are **AI-friendly workflow definitions** that let you:
 
-### Command Types
-1. **Template Commands**: Generate documents from templates with variable substitution
-2. **Execution Commands**: Run shell commands with state tracking
-3. **Query Commands**: Check project status with validation rules
-4. **Interactive Commands**: User interaction points in workflows
+- 🎯 Tell AI agents what your workflow does and when to use it
+- 📋 Define structured steps with clear dependencies
+- 🔄 Track progress automatically
+- 🤖 Enable AI to guide you through complex processes
 
-## 📦 Installation
+## 🚀 Quick Start (30 seconds)
 
-### Prerequisites
-- [Bun](https://bun.sh/) >= 1.0.0
+### Step 1: Install
 
-Install Bun if you haven't already:
 ```bash
+# Install Bun if you haven't
 curl -fsSL https://bun.sh/install | bash
-```
 
-### Install SpecCraft
-Install globally using Bun:
-```bash
+# Install SpecCraft
 bun add -g @speccraft/cli
 ```
 
-Or using npm:
-```bash
-npm install -g @speccraft/cli
+### Step 2: Use a Built-in Skill
+
+When you first run `craft`, it auto-installs skills to your Claude Code. Just talk to Claude naturally:
+
+```
+You: "Help me develop a new feature"
+Claude: [Uses speccraft:feature-dev skill]
 ```
 
-Verify installation:
-```bash
-craft --version
-craft --help
-```
+**Available built-in skills:**
+- `speccraft:brainstorm` - Structured brainstorming
+- `speccraft:feature-dev` - Feature development lifecycle
+- `speccraft:api-design` - API specification
+- `speccraft:bug-fix` - Bug investigation & fixing
+- `speccraft:quick-prototype` - Rapid prototyping
 
-## 🚀 Quick Start
-
-### 1. Initialize a Marketplace
-Create a marketplace directory to store your workflows:
-
-```bash
-craft init my-workflows
-cd my-workflows
-```
-
-This creates:
-```
-my-workflows/
-├── marketplace.json    # Marketplace configuration
-└── workflows/         # Your workflow definitions
-```
-
-### 2. Copy a Built-in Template
-Start with a pre-built template:
+### Step 3: Run a Workflow
 
 ```bash
+# Copy a workflow to start
 craft copy feature-dev my-feature
+
+# Run the first step
+craft run my-feature init --instance my-app
 ```
 
-Available templates:
-- `brainstorm` - Structured brainstorming sessions
-- `feature-dev` - Complete feature development lifecycle
-- `api-design` - API specification and design
-- `bug-fix` - Systematic bug investigation and fixing
-- `quick-prototype` - Rapid prototyping workflow
+## 📖 How to Use Built-in Skills
 
-### 3. List Available Workflows
+### Talking to Claude Code
+
+After installing SpecCraft, Claude Code discovers your skills automatically. Just describe what you want to do:
+
+```
+You: "I need to design an API for user authentication"
+Claude: Uses speccraft:api-design skill, asks questions, generates spec
+
+You: "There's a bug in the login flow"
+Claude: Uses speccraft:bug-fix skill, guides through diagnosis
+
+You: "Help me brainstorm a new product feature"
+Claude: Uses speccraft:brainstorm skill, structures the session
+```
+
+### Running from Command Line
+
 ```bash
+# List available workflows
 craft list
-```
 
-### 4. View Workflow Details
-```bash
-craft show my-feature
-```
+# View workflow details
+craft show feature-dev
 
-### 5. Run Workflow Commands
-```bash
-# Run a specific command
-craft run my-feature init
+# Run workflow commands
+craft run my-feature spec --instance my-app
+craft run my-feature design --instance my-app
 
-# Commands run automatically with dependencies
-craft run my-feature spec
-
-# Force re-run a completed command
-craft run my-feature spec --force
-
-# Auto-run dependencies
-craft run my-feature design --auto-deps
-```
-
-### 6. Check Workflow Status
-```bash
+# Check progress
 craft status my-feature
 ```
 
-## 📚 Workflow Structure
+## 🔨 Creating Custom Skills
 
-### Basic workflow.yaml
-```yaml
-name: my-workflow
-version: 1.0.0
-description: My custom workflow
+### Quick Start
 
-variables:
-  feature:
-    type: string
-    required: true
-    description: Feature name
-    prompt: Enter the feature name
-  
-  priority:
-    type: select
-    options: [P0, P1, P2, P3]
-    default: P2
-
-commands:
-  init:
-    type: template
-    description: Initialize feature
-    template: templates/init.md
-    output: "specs/{{feature}}/init.md"
-  
-  spec:
-    type: template
-    description: Write specification
-    template: templates/spec.md
-    output: "specs/{{feature}}/spec.md"
-    dependsOn: [init]
-  
-  implement:
-    type: execution
-    description: Implement the feature
-    dependsOn: [spec]
-    execution:
-      shell: "echo Implementing {{feature}}"
-  
-  validate:
-    type: query
-    description: Validate implementation
-    dependsOn: [implement]
-    checks:
-      - test-coverage
-      - no-lint-errors
-```
-
-### Advanced Features
-
-#### 1. Knowledge Injection
-Inject external knowledge into command templates:
-
-```yaml
-commands:
-  design:
-    type: template
-    description: Generate design
-    template: templates/design.md
-    output: "docs/design.md"
-    injectKnowledge:
-      - id: api-guidelines
-        source: docs/api-guidelines.md
-        removeFromOutput: true
-      - id: architecture
-        source: docs/architecture.md
-```
-
-#### 2. Chapter System
-Generate documents incrementally:
-
-```yaml
-commands:
-  write-docs:
-    type: template
-    description: Write documentation
-    template: templates/docs.md
-    output: "docs/{{feature}}/README.md"
-    chapters:
-      - id: intro
-        title: Introduction
-      - id: usage
-        title: Usage Guide
-      - id: api
-        title: API Reference
-    chapterGroups:
-      - name: basics
-        chapters: [intro, usage]
-      - name: advanced
-        chapters: [api]
-```
-
-#### 3. SubAgent Parallel Execution
-Define parallel tasks with dependencies:
-
-```yaml
-commands:
-  analyze:
-    type: template
-    description: Analyze codebase
-    template: templates/analysis.md
-    output: "analysis/{{feature}}.md"
-    subAgents:
-      - id: security
-        name: Security Analysis
-        prompt: "Analyze security implications"
-      
-      - id: performance
-        name: Performance Analysis
-        prompt: "Analyze performance impact"
-      
-      - id: summary
-        name: Combined Summary
-        prompt: "Summarize findings from security and performance"
-        dependsOn: [security, performance]
-```
-
-#### 4. Context Management
-Control when command context expires:
-
-```yaml
-contextManagement:
-  resetAfter: 3        # Reset after 3 commands
-  roundThreshold: 5    # Reset after 5 total rounds
-
-commands:
-  generate:
-    type: template
-    description: Generate code
-    template: templates/code.md
-    output: "src/{{feature}}.ts"
-    contextManagement:
-      resetAfter: 1    # Override: reset after this command
-```
-
-## 🛠️ Creating Custom Workflows
-
-### Use the create command
 ```bash
-craft create my-custom-workflow
+# Create a new workflow from template
+craft copy feature-dev my-custom-workflow
+
+# Edit the workflow definition
+cd my-custom-workflow
+vim workflow.yaml
 ```
 
-Follow the interactive prompts to:
-1. Enter workflow name and description
-2. Define variables
-3. Add commands
-4. Configure dependencies
+### Publishing Your Skill
 
-### Workflow Directory Structure
-```
-my-custom-workflow/
-├── workflow.yaml           # Main workflow definition
-├── SKILL.md               # Claude skill prompt (optional)
-└── templates/             # Template files
-    ├── init.md
-    ├── spec.md
-    └── design.md
-```
-
-### Template Files
-Templates use `{{variable}}` syntax for substitution:
-
-```markdown
-# Feature: {{feature}}
-
-Priority: {{priority}}
-
-## Overview
-This feature will...
-
-## Requirements
-- Requirement 1
-- Requirement 2
-```
-
-## Skills for AI Agents
-
-SpecCraft includes skills that enable AI agents (like Claude Code) to effectively use workflows through natural language.
-
-### Built-in Skills
-
-When you run `craft` for the first time, it automatically installs 6 built-in skills to `~/.claude/skills/`:
-
-- **speccraft-manager** - Create, update, and publish workflows
-- **speccraft:brainstorm** - Structured brainstorming workflow
-- **speccraft:feature-dev** - Complete feature development lifecycle
-- **speccraft:api-design** - API specification workflow
-- **speccraft:bug-fix** - Systematic bug fixing workflow
-- **speccraft:quick-prototype** - Rapid prototyping workflow
-
-### Publishing Your Workflows
-
-Share your custom workflows as skills:
+Share your skill with yourself or your team:
 
 ```bash
 # Publish locally (for personal use)
-craft publish my-workflow --mode local
+craft publish my-custom-workflow --mode local
 
 # Publish to team marketplace
-craft publish my-workflow --mode marketplace --marketplace ~/team-workflows
+craft publish my-custom-workflow --mode marketplace --marketplace ~/team-workflows
 ```
 
-**Local Mode:**
-- Installs to `~/.claude/skills/speccraft:my-workflow/`
-- Claude Code auto-discovers the skill
-- Quick setup for personal workflows
+Your skill is now available to AI agents!
 
-**Marketplace Mode:**
-- Creates full plugin structure in a Git repository
-- Shareable with teams and community
-- Follows Claude Code plugin standards
+## 📚 Built-in Skills Reference
 
-### Using Skills with Claude Code
+### speccraft:brainstorm
 
-Once skills are installed, you can interact naturally:
+**When to use:** Need to explore ideas systematically
 
-```
-You: "Help me create a code review workflow"
-Claude: [Uses speccraft-manager skill to guide you]
+**Commands:**
+- `init` - Start a brainstorming session
+- `explore` - Explore different directions
+- `summarize` - Document key insights
 
-You: "Start a new feature development for user authentication"
-Claude: [Uses speccraft:feature-dev skill to walk you through the process]
-```
+### speccraft:feature-dev
 
-## 📖 Built-in Templates
+**When to use:** Building a new feature from scratch
 
-### 1. brainstorm
-Structured brainstorming workflow:
-- `init` - Initialize brainstorming session
-- `explore` - Explore ideas and directions
-- `summarize` - Summarize results
-
-### 2. feature-dev
-Complete feature development lifecycle:
-- `init` - Initialize feature
-- `spec` - Write specification
-- `design` - Create technical design
+**Commands:**
+- `init` - Initialize feature specification
+- `spec` - Write detailed specification
+- `design` - Technical design
 - `tasks` - Break down into tasks
-- `implement` - Implement code
-- `test` - Run tests
-- `validate` - Validate completeness
-- `fix` - Fix issues
-- `status` - Check status
+- `implement` - Implementation phase
+- `test` - Testing
+- `validate` - Final validation
 
-### 3. api-design
-API specification workflow:
-- `init` - Initialize API design
-- `define` - Define endpoints and schemas
+### speccraft:api-design
+
+**When to use:** Designing APIs
+
+**Commands:**
+- `init` - Start API design
+- `define` - Define endpoints
 - `review` - Review design
-- `done` - Finalize specification
+- `done` - Finalize
 
-### 4. bug-fix
-Systematic bug fixing:
-- `init` - Initialize bug investigation
-- `reproduce` - Reproduce the bug
-- `diagnose` - Diagnose root cause
+### speccraft:bug-fix
+
+**When to use:** Investigating and fixing bugs
+
+**Commands:**
+- `init` - Initialize bug report
+- `reproduce` - Reproduce the issue
+- `diagnose` - Find root cause
 - `fix` - Implement fix
-- `verify` - Verify fix works
-- `status` - Check progress
+- `verify` - Verify the fix
 
-### 5. quick-prototype
-Rapid prototyping:
-- `init` - Initialize prototype
-- `prototype` - Build quick prototype
-- `test` - Test prototype
-- `reflect` - Reflect on learnings
-- `refine` - Refine approach
-- `status` - Check status
+### speccraft:quick-prototype
 
-## 🏗️ Architecture
+**When to use:** Rapid prototyping
 
-### Core Components
+**Commands:**
+- `init` - Start prototyping
+- `prototype` - Build prototype
+- `test` - Test quickly
+- `reflect` - Review learnings
+- `refine` - Improve
 
-#### WorkflowLoader
-Loads and validates workflow definitions from YAML files.
+## CLI Reference
 
-#### SchemaValidator
-Validates workflow schemas using Zod for type safety.
+For advanced usage, here are the CLI commands:
 
-#### StateManager
-Tracks command execution state, dependencies, and chapter progress.
-
-#### DependencyResolver
-Resolves command dependencies and detects circular dependencies.
-
-#### CommandExecutor
-Executes commands with proper context and variable substitution.
-
-#### VariablePrompter
-Handles variable validation and user prompts.
-
-#### TemplateRenderer
-Renders templates with variable substitution.
-
-#### KnowledgeInjector
-Injects external knowledge into command prompts.
-
-#### ChapterManager
-Manages incremental document generation with chapter groups.
-
-#### SubAgentManager
-Manages parallel subagent execution with dependencies.
-
-### Error Handling
-
-Custom error hierarchy with helpful hints:
-
-```typescript
-// Workflow not found
-throw new WorkflowNotFoundError('my-workflow', './workflows');
-// Error [WORKFLOW_NOT_FOUND]: Workflow "my-workflow" not found at ./workflows
-// Hint: Make sure the workflow directory exists and contains a workflow.yaml file.
-
-// Validation error
-throw new ValidationError(['name is required', 'version is required']);
-// Error [VALIDATION_ERROR]: Validation failed with 2 errors:
-//   - name is required
-//   - version is required
-
-// Dependency error
-throw new DependencyError('spec', 'init');
-// Error [DEPENDENCY_ERROR]: Cannot execute command "spec" because dependency "init" is not completed
-```
-
-## 🧪 Development
-
-### Run Tests
 ```bash
-# Run all tests
-bun test
+# Workflow management
+craft init <name>           # Create marketplace
+craft copy <template> [dest]  # Copy template
+craft list                  # List workflows
+craft show <workflow>      # Show details
 
-# Run with coverage
-bun test --coverage
+# Run workflows
+craft run <workflow> <command> [options]
+  --instance <name>        # Instance name
+  --force                  # Force re-run
+  --auto-deps              # Auto-run dependencies
 
-# Watch mode
-bun test --watch
+# Status
+craft status <workflow>    # Show progress
+craft log <workflow>      # Show logs
+
+# Publishing
+craft publish <workflow> [options]
+  --mode <local|marketplace>
+  --marketplace <path>
+  --force
 ```
 
-### Type Checking
-```bash
-bun run typecheck
+## Project Structure
+
+```
+my-workflow/
+├── workflow.yaml          # Workflow definition
+├── templates/            # Template files
+└── SKILL.md             # Skill description (auto-generated)
 ```
 
-### Development Mode
-```bash
-# Auto-reload on changes
-bun run dev
-```
+## Advanced Features
 
-## 📊 Project Status
+- **Variables** - Dynamic substitution with types (string, select, boolean)
+- **Dependencies** - Automatic ordering with `dependsOn`
+- **Knowledge Injection** - Inject docs into prompts
+- **Chapter System** - Incremental document generation
+- **SubAgent Support** - Parallel AI task execution
 
-### Phase Completion
+See [full documentation](./docs) for details.
 
-- ✅ **Phase 1**: Core Infrastructure
-  - Workflow parsing and validation
-  - Basic template system
-  - Command execution
-  - CLI commands (init, list, show, run, copy)
+## Contributing
 
-- ✅ **Phase 2**: State & Dependencies
-  - State persistence
-  - Dependency resolution
-  - Command invalidation
-  - Auto-run dependencies
-
-- ✅ **Phase 3**: Advanced Features
-  - Knowledge injection
-  - Chapter system
-  - SubAgent support
-  - Workflow creation (craft create)
-
-- ✅ **Phase 4**: Polish & Templates
-  - Schema validation (Zod)
-  - Error handling
-  - Built-in templates (5 total)
-  - Integration tests
-
-### Test Coverage
-- **170 tests** passing
-- **408 assertions**
-- **22 test files**
-- **100% pass rate**
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-### Development Setup (For Contributors)
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/your-username/spec-craft.git`
-3. Install dependencies: `bun install`
-4. Create a feature branch: `git checkout -b feature/amazing-feature`
-5. Make your changes
-6. Run tests: `bun test`
-7. Type check: `bun run typecheck`
-8. Commit your changes: `git commit -m 'feat: add amazing feature'`
-9. Push to the branch: `git push origin feature/amazing-feature`
-10. Open a Pull Request
-
-### Local Development
-```bash
-# Clone the repository
-git clone https://github.com/spec-craft/spec-craft.git
-cd spec-craft
-
-# Install dependencies
-bun install
-
-# Run in development mode (auto-reload)
-bun run dev
-
-# Run tests
-bun test
-
-# Type checking
-bun run typecheck
-```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-Built with:
-- [Bun](https://bun.sh/) - Fast JavaScript runtime
-- [Commander.js](https://github.com/tj/commander.js) - CLI framework
-- [Zod](https://github.com/colinhacks/zod) - Schema validation
-- [Inquirer.js](https://github.com/SBoudrias/Inquirer.js) - Interactive prompts
-- [Chalk](https://github.com/chalk/chalk) - Terminal styling
-- [yaml](https://github.com/eemeli/yaml) - YAML parser
-
-## 📮 Support
-
-For questions and support, please open an issue in the [GitHub repository](https://github.com/spec-craft/spec-craft/issues).
-
----
-
-Made with ❤️ for spec-driven development
+Issues and PRs welcome! [GitHub](https://github.com/spec-craft/spec-craft)
